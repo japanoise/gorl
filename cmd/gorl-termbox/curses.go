@@ -11,9 +11,9 @@ import (
 	"github.com/nsf/termbox-go"
 )
 
-func NewCurses() *Curses {
-	retval := &Curses{getMonsterSprites(), getTileSprites()}
-	return retval
+type Curses struct {
+	Sprites     map[gorl.Sprite]*CursesSprite
+	TileSprites map[gorl.TileID]*CursesSprite
 }
 
 type CursesSprite struct {
@@ -22,13 +22,13 @@ type CursesSprite struct {
 	Bg termbox.Attribute
 }
 
-func Draw(x, y int, spr *CursesSprite) {
-	termbox.SetCell(x, y, spr.Ru, spr.Fg, spr.Bg)
+func NewCurses() *Curses {
+	retval := &Curses{getSprites(), getTileSprites()}
+	return retval
 }
 
-type Curses struct {
-	MonsterSprites map[gorl.Sprite]*CursesSprite
-	TileSprites    map[gorl.TileID]*CursesSprite
+func Draw(x, y int, spr *CursesSprite) {
+	termbox.SetCell(x, y, spr.Ru, spr.Fg, spr.Bg)
 }
 
 func (c *Curses) Start() error {
@@ -43,9 +43,13 @@ func (c *Curses) End() {
 func (c *Curses) drawAt(dun *gorl.Map, screenx, screeny, x, y int) {
 	here := dun.Tiles[x][y].Here
 	if here == nil {
-		Draw(screenx, screeny, c.TileSprites[dun.Tiles[x][y].Id])
+		if len(dun.Tiles[x][y].Items) == 0 {
+			Draw(screenx, screeny, c.TileSprites[dun.Tiles[x][y].Id])
+		} else {
+			Draw(screenx, screeny, c.Sprites[dun.Tiles[x][y].Items[0].Spr])
+		}
 	} else {
-		Draw(screenx, screeny, c.MonsterSprites[here.GetSprite()])
+		Draw(screenx, screeny, c.Sprites[here.GetSprite()])
 	}
 }
 

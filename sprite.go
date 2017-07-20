@@ -9,4 +9,7 @@ const (
 	SpriteHumanMale
 	SpriteHumanFemale
 	SpriteMonsterUnknown
+	SpriteItemGold
+	SpriteItemWeaponGeneric
+	SpriteItemAppGeneric
 )

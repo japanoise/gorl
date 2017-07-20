@@ -189,18 +189,13 @@ func Populate(dungeon *Map, spawnrooms []SpawnRegion) []*Critter {
 	for i, room := range spawnrooms {
 		mons := RandomCritter(dungeon.Elevation)
 		ret[i] = mons
-		roomw := room.BotRightX - room.TopLeftX
-		mons.X = room.TopLeftX + rand.Intn(roomw)
-		roomh := room.BotRightY - room.TopLeftY
-		mons.Y = room.TopLeftY + rand.Intn(roomh)
-		dungeon.Tiles[mons.X][mons.Y].Here = mons
+		PlaceCritterInRoom(mons, dungeon, room)
+		PlaceItemInRoom(GetGoldCoin(), dungeon, room)
 	}
 	return ret
 }
 
-// Place the critter at a random point in the dungeon
-func PlaceCritter(mons *Critter, dungeon *Map, spawnrooms []SpawnRegion) {
-	room := spawnrooms[rand.Intn(len(spawnrooms))]
+func PlaceCritterInRoom(mons *Critter, dungeon *Map, room SpawnRegion) {
 	if dungeon.Tiles[mons.X][mons.Y].Here == mons {
 		dungeon.Tiles[mons.X][mons.Y].Here = nil
 	}
@@ -208,11 +203,33 @@ func PlaceCritter(mons *Critter, dungeon *Map, spawnrooms []SpawnRegion) {
 	roomh := room.BotRightY - room.TopLeftY
 	x := room.TopLeftX + rand.Intn(roomw)
 	y := room.TopLeftY + rand.Intn(roomh)
-	for pass, here := dungeon.GetPassable(x, y); !(pass && here == nil); {
+	for pass, here := dungeon.GetPassable(x, y); !(notStairs(dungeon, x, y) && pass && here == nil); {
 		x = room.TopLeftX + rand.Intn(roomw)
 		y = room.TopLeftY + rand.Intn(roomh)
 	}
 	mons.X = x
 	mons.Y = y
 	dungeon.Tiles[mons.X][mons.Y].Here = mons
+}
+
+func PlaceItemInRoom(item *Item, dungeon *Map, room SpawnRegion) {
+	roomw := room.BotRightX - room.TopLeftX
+	roomh := room.BotRightY - room.TopLeftY
+	x := room.TopLeftX + rand.Intn(roomw)
+	y := room.TopLeftY + rand.Intn(roomh)
+	for pass, _ := dungeon.GetPassable(x, y); !(notStairs(dungeon, x, y) && pass); {
+		x = room.TopLeftX + rand.Intn(roomw)
+		y = room.TopLeftY + rand.Intn(roomh)
+	}
+	dungeon.Tiles[x][y].Items = append(dungeon.Tiles[x][y].Items, item)
+}
+
+func notStairs(dungeon *Map, x, y int) bool {
+	return dungeon.Tiles[x][y].Id != TileStairDown && dungeon.Tiles[x][y].Id != TileStairUp
+}
+
+// Place the critter at a random point in the dungeon
+func PlaceCritter(mons *Critter, dungeon *Map, spawnrooms []SpawnRegion) {
+	room := spawnrooms[rand.Intn(len(spawnrooms))]
+	PlaceCritterInRoom(mons, dungeon, room)
 }

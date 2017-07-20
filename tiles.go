@@ -53,10 +53,10 @@ func init() {
 
 // Wall tile
 func WallTile() MapTile {
-	return MapTile{nil, TileWall}
+	return MapTile{nil, TileWall, []*Item{}}
 }
 
 // Floor tile
 func FloorTile() MapTile {
-	return MapTile{nil, TileFloor}
+	return MapTile{nil, TileFloor, []*Item{}}
 }

@@ -27,5 +27,5 @@ func init() {
 }
 
 func GetMonster(race MonsterID) *Critter {
-	return &Critter{0, 0, race, Bestiary[race].Name, nil, DefStatBlock(), false}
+	return &Critter{0, 0, race, Bestiary[race].Name, nil, DefStatBlock(), false, []*Item{}}
 }
