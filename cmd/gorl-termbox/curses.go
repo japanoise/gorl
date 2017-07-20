@@ -164,16 +164,3 @@ func drawStringDetails(x, y int, str string, fg, bg termbox.Attribute) {
 		os += termutil.Runewidth(runeValue)
 	}
 }
-
-func termboxGetColor(col gorl.Color) termbox.Attribute {
-	switch col {
-	case gorl.ColorRed:
-		return termbox.ColorRed
-	case gorl.ColorBlue:
-		return termbox.ColorBlue
-	case gorl.ColorGreen:
-		return termbox.ColorGreen
-	default:
-		return termbox.ColorDefault
-	}
-}

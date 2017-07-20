@@ -10,14 +10,16 @@ import (
 	"time"
 )
 
-type Color uint8
-
-const (
-	ColorDefault Color = iota
-	ColorGreen
-	ColorRed
-	ColorBlue
+var (
+	debug *log.Logger
 )
+
+type SpawnRegion struct {
+	TopLeftX  int
+	TopLeftY  int
+	BotRightX int
+	BotRightY int
+}
 
 type State struct {
 	Monsters []*Critter
@@ -33,42 +35,13 @@ type StateDungeon struct {
 	Monsters [][]*Critter
 }
 
-type Map struct {
-	Tiles       [][]MapTile
-	SizeX       int
-	SizeY       int
-	Elevation   int // lt 0 means dungeon, gt 0 means outdoors, 0 means inside a civilized area
-	UpStairsX   int
-	UpStairsY   int
-	DownStairsX int
-	DownStairsY int
+func init() {
+	out, _ := os.Create("debug.log")
+	debug = log.New(out, "", log.Lshortfile)
+	seed := NewSeed()
+	rand.Seed(seed)
+	debug.Print(seed)
 }
-
-type SpawnRegion struct {
-	TopLeftX  int
-	TopLeftY  int
-	BotRightX int
-	BotRightY int
-}
-
-type MapTile struct {
-	Here *Critter
-	Id   TileID
-}
-
-func (m *MapTile) IsPassable() bool {
-	return TilesDir[m.Id].Passable
-}
-
-type Tile struct {
-	Name     string
-	Passable bool
-}
-
-var (
-	TilesDir map[TileID]Tile
-	debug    *log.Logger
-)
 
 func DigDungeon(d int) *StateDungeon {
 	ret := StateDungeon{
@@ -108,91 +81,8 @@ func (d *StateDungeon) GetDunLevel(oldelevation, elevation int, monlist []*Critt
 	return m, d.Monsters[elevation], sp, nil
 }
 
-func init() {
-	out, _ := os.Create("debug.log")
-	debug = log.New(out, "", log.Lshortfile)
-	seed := NewSeed()
-	rand.Seed(seed)
-	debug.Print(seed)
-	/* Basic Tiles */
-	TilesDir = make(map[TileID]Tile)
-	TilesDir[TileVoid] = Tile{
-		"the void",
-		false,
-	}
-	TilesDir[TileWall] = Tile{
-		"solid wall",
-		false,
-	}
-	TilesDir[TileFloor] = Tile{
-		"stone floor",
-		true,
-	}
-	TilesDir[TileGrass] = Tile{
-		"grass",
-		true,
-	}
-	TilesDir[TileStairDown] = Tile{
-		"stairs leading down",
-		true,
-	}
-	TilesDir[TileStairUp] = Tile{
-		"stairs leading up",
-		true,
-	}
-}
-
 func NewSeed() int64 {
 	return time.Now().UTC().UnixNano()
-}
-
-func Move(m *Map, who *Critter, dx, dy int) *Critter {
-	x, y := who.X+dx, who.Y+dy
-	passable, target := m.GetPassable(x, y)
-	if passable && target == nil {
-		m.Tiles[who.X][who.Y].Here = nil
-		who.X = x
-		who.Y = y
-		m.Tiles[who.X][who.Y].Here = who
-	}
-	return target
-}
-
-func (m *Map) GetPassable(x, y int) (bool, *Critter) {
-	if x < m.SizeX && x >= 0 && y < m.SizeY && y >= 0 {
-		return m.Tiles[x][y].IsPassable(), m.Tiles[x][y].Here
-	} else {
-		return false, nil
-	}
-}
-
-func (m *Map) PlaceCritterAtDownStairs(c *Critter) {
-	c.X = m.DownStairsX
-	c.Y = m.DownStairsY
-	m.Tiles[c.X][c.Y].Here = c
-}
-
-func (m *Map) PlaceCritterAtUpStairs(c *Critter) {
-	c.X = m.UpStairsX
-	c.Y = m.UpStairsY
-	m.Tiles[c.X][c.Y].Here = c
-}
-
-func GetBlankMap(elevation, sizex, sizey int) *Map {
-	retval := Map{
-		make([][]MapTile, sizex),
-		sizex,
-		sizey,
-		elevation,
-		0, 0, 0, 0,
-	}
-	for i := 0; i < sizex; i++ {
-		retval.Tiles[i] = make([]MapTile, sizey)
-		for j := 0; j < sizey; j++ {
-			retval.Tiles[i][j] = MapTile{}
-		}
-	}
-	return &retval
 }
 
 func DunGen(elevation int) (*Map, []SpawnRegion) {
@@ -325,16 +215,4 @@ func PlaceCritter(mons *Critter, dungeon *Map, spawnrooms []SpawnRegion) {
 	mons.X = x
 	mons.Y = y
 	dungeon.Tiles[mons.X][mons.Y].Here = mons
-}
-
-/* Fast tile functions */
-
-// Wall tile
-func WallTile() MapTile {
-	return MapTile{nil, TileWall}
-}
-
-// Floor tile
-func FloorTile() MapTile {
-	return MapTile{nil, TileFloor}
 }
