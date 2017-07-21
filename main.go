@@ -70,6 +70,7 @@ func MainLoopOverworld(state *State, player *Critter, over *Overworld) {
 				if tile.OwData == nil || tile.OwData.Dungeon == nil {
 					state.Out.Message("The entrance has caved in.")
 				} else {
+					state.Out.Message("You make your way down into the murky depths...")
 					over.SavedPx = player.X
 					over.SavedPy = player.Y
 					state.Dungeon = 1
@@ -158,6 +159,8 @@ func MainLoopDungeon(state *State, player *Critter, mydun *StateDungeon, ow *Ove
 				state.Monsters = make([]*Critter, len(duncritters), len(duncritters))
 				copy(state.Monsters, duncritters)
 				dunlevel.PlaceCritterAtUpStairs(player)
+			} else if dunlevel.Tiles[player.X][player.Y].Id == TileStairUp {
+				state.Out.Message("These stairs only lead up!")
 			} else {
 				state.Out.Message("There are no stairs here!")
 			}
@@ -178,6 +181,8 @@ func MainLoopDungeon(state *State, player *Critter, mydun *StateDungeon, ow *Ove
 				if state.Dungeon != 0 {
 					dunlevel.PlaceCritterAtDownStairs(player)
 				}
+			} else if dunlevel.Tiles[player.X][player.Y].Id == TileStairDown {
+				state.Out.Message("These stairs only lead down!")
 			} else {
 				state.Out.Message("There are no stairs here!")
 			}
