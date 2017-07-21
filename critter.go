@@ -75,13 +75,19 @@ func RandomCritter(elevation int) *Critter {
 func (c *Critter) GetName() string {
 	if c.Name != "" {
 		return c.Name
-	} else if c.Race == MonsterHuman {
+	} else {
+		return engutil.ASlashAn(c.GetRaceName())
+	}
+}
+
+func (c *Critter) GetRaceName() string {
+	if c.Race == MonsterHuman {
 		if c.Female {
-			return "a woman"
+			return "woman"
 		} else {
-			return "a man"
+			return "man"
 		}
 	} else {
-		return engutil.ASlashAn(Bestiary[c.Race].Name)
+		return Bestiary[c.Race].Name
 	}
 }
