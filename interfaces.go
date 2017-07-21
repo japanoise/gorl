@@ -28,6 +28,7 @@ const (
 	PlayerLook
 	Quit
 	Warp
+	DoSaveGame
 )
 
 type Direction uint8

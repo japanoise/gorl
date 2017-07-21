@@ -22,11 +22,11 @@ type SpawnRegion struct {
 }
 
 type State struct {
-	Monsters []*Critter
-	CurLevel *Map
+	Monsters []*Critter `json:"-"`
+	CurLevel *Map       `json:"-"`
 	Dungeon  int
-	In       Input
-	Out      Graphics
+	In       Input    `json:"-"`
+	Out      Graphics `json:"-"`
 }
 
 type StateDungeon struct {
@@ -93,6 +93,19 @@ func (d *StateDungeon) GetDunLevel(oldelevation, elevation int, monlist []*Critt
 		m.PlaceItems(d.Items[elevation])
 	}
 	return m, d.Monsters[elevation], sp, nil
+}
+
+func (d *StateDungeon) GetDunLevelFromStorage(elevation int) (*Map, []*Critter) {
+	rand.Seed(d.Seeds[elevation])
+	m, sp := DunGen(elevation)
+	DunAddFeatures(m, sp, elevation, d.Depth)
+	for _, mon := range d.Monsters[elevation] {
+		if mon != nil {
+			m.Tiles[mon.X][mon.Y].Here = mon
+		}
+	}
+	m.PlaceItems(d.Items[elevation])
+	return m, d.Monsters[elevation]
 }
 
 func NewSeed() int64 {

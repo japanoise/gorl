@@ -145,6 +145,8 @@ func (c *Curses) GetAction() gorl.Control {
 				return gorl.PlayerClimbDown
 			case ':':
 				return gorl.PlayerLook
+			case 's':
+				return gorl.DoSaveGame
 			default:
 				return gorl.DoNothing
 			}

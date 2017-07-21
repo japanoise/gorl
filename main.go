@@ -4,23 +4,59 @@ import (
 	"strconv"
 )
 
-func MainLoop(g Graphics, i Input) {
-	state := State{
+func MainLoop(g Graphics, i Input) error {
+	state := &State{
 		[]*Critter{},
 		nil,
-		1,
+		0,
 		i,
 		g,
 	}
 	state.Out.Start()
+	ierr := InitDirs()
+	if ierr != nil {
+		return ierr
+	}
 	defer state.Out.End()
-	player := GetMonster(MonsterHuman)
-	player.Name = state.Out.GetString("Your name?", false)
-	over := OverworldGen(player, 15, 15)
-	MainLoopOverworld(g, i, state, player, over)
+	playing := true
+	for playing {
+		menuitem := state.Out.MenuIndex("Gorl", []string{"New Game", "Load Game", "Quit"})
+		if menuitem == 0 {
+			state.CurLevel = nil
+			state.Monsters = nil
+			state.Dungeon = 0
+			player := GetMonster(MonsterHuman)
+			player.Name = state.Out.GetString("Your name?", false)
+			over := OverworldGen(player, 15, 15)
+			MainLoopOverworld(state, player, over)
+		} else if menuitem == 1 {
+			player, newstate, over, err := LoadGame(state)
+			if err != nil {
+				state.Out.Message(err.Error())
+				continue
+			} else {
+				state.CurLevel = newstate.CurLevel
+				state.Monsters = newstate.Monsters
+				state.Dungeon = newstate.Dungeon
+			}
+			if state.Dungeon > 0 {
+				quit := MainLoopDungeon(state, player, over.M.Tiles[over.SavedPx][over.SavedPy].OwData.Dungeon, over, false)
+				if quit {
+					continue
+				}
+			}
+			player.X = over.SavedPx
+			player.Y = over.SavedPy
+			state.Dungeon = 0
+			MainLoopOverworld(state, player, over)
+		} else {
+			playing = false
+		}
+	}
+	return nil
 }
 
-func MainLoopOverworld(g Graphics, i Input, state State, player *Critter, over *Overworld) {
+func MainLoopOverworld(state *State, player *Critter, over *Overworld) {
 	state.CurLevel = over.M
 	playing := true
 	for playing {
@@ -36,7 +72,9 @@ func MainLoopOverworld(g Graphics, i Input, state State, player *Critter, over *
 				} else {
 					over.SavedPx = player.X
 					over.SavedPy = player.Y
-					playing = !MainLoopDungeon(g, i, state, player, tile.OwData.Dungeon)
+					state.Dungeon = 1
+					playing = !MainLoopDungeon(state, player, tile.OwData.Dungeon, over, true)
+					state.Dungeon = 0
 					player.X = over.SavedPx
 					player.Y = over.SavedPy
 				}
@@ -59,7 +97,16 @@ func MainLoopOverworld(g Graphics, i Input, state State, player *Critter, over *
 		case PlayerRight:
 			target = Move(state.CurLevel, player, +1, 0)
 		case PlayerLook:
-			Look(state.CurLevel, g, i, player)
+			Look(state.CurLevel, state.Out, state.In, player)
+		case DoSaveGame:
+			over.SavedPx = player.X
+			over.SavedPy = player.Y
+			err := SaveGame(player, state, over)
+			if err == nil {
+				state.Out.Message("Game saved.")
+			} else {
+				state.Out.Message(err.Error())
+			}
 		case Quit:
 			playing = false
 		}
@@ -77,13 +124,21 @@ func MainLoopOverworld(g Graphics, i Input, state State, player *Critter, over *
 	}
 }
 
-func MainLoopDungeon(g Graphics, i Input, state State, player *Critter, mydun *StateDungeon) bool {
-	dunlevel, duncritters, _, _ := mydun.GetDunLevel(0, 1, []*Critter{}, nil)
-	state.Monsters = make([]*Critter, len(duncritters), len(duncritters))
-	debug.Print("Copy to from: ", state.Monsters, duncritters)
-	copy(state.Monsters, duncritters)
-	debug.Print("Copy to from: ", state.Monsters, duncritters)
-	dunlevel.PlaceCritterAtUpStairs(player)
+func MainLoopDungeon(state *State, player *Critter, mydun *StateDungeon, ow *Overworld, climbdown bool) bool {
+	var dunlevel *Map
+	var duncritters []*Critter
+	if climbdown {
+		dunlevel, duncritters, _, _ = mydun.GetDunLevel(0, 1, []*Critter{}, nil)
+		state.Monsters = make([]*Critter, len(duncritters), len(duncritters))
+		debug.Print("Copy to from: ", state.Monsters, duncritters)
+		copy(state.Monsters, duncritters)
+		debug.Print("Copy to from: ", state.Monsters, duncritters)
+		dunlevel.PlaceCritterAtUpStairs(player)
+	} else {
+		dunlevel = state.CurLevel
+		duncritters = state.Monsters
+		dunlevel.Tiles[player.X][player.Y].Here = player
+	}
 
 	playing := true
 	for playing {
@@ -142,7 +197,18 @@ func MainLoopDungeon(g Graphics, i Input, state State, player *Critter, mydun *S
 		case PlayerRight:
 			target = Move(dunlevel, player, +1, 0)
 		case PlayerLook:
-			Look(dunlevel, g, i, player)
+			Look(state.CurLevel, state.Out, state.In, player)
+		case DoSaveGame:
+			items := make([]*DungeonItem, 0, 20)
+			items = dunlevel.CollectItems(items)
+			mydun.Items[state.Dungeon] = items
+			mydun.Monsters[state.Dungeon] = state.Monsters
+			err := SaveGame(player, state, ow)
+			if err == nil {
+				state.Out.Message("Game saved.")
+			} else {
+				state.Out.Message(err.Error())
+			}
 		case Quit:
 			return true
 		}
@@ -156,6 +222,9 @@ func MainLoopDungeon(g Graphics, i Input, state State, player *Critter, mydun *S
 					}
 				}
 			}
+		}
+		if dunlevel != nil {
+			dunlevel.Tiles[player.X][player.Y].Items = []*Item{}
 		}
 	}
 	return false

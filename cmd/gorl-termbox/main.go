@@ -1,10 +1,16 @@
 package main
 
 import (
+	"fmt"
+
 	"github.com/japanoise/gorl"
 )
 
 func main() {
 	c := NewCurses()
-	gorl.MainLoop(c, c)
+	err := gorl.MainLoop(c, c)
+	if err != nil {
+		c.End()
+		fmt.Println(err.Error())
+	}
 }

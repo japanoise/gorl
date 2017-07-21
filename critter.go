@@ -9,7 +9,7 @@ type Critter struct {
 	Y       int
 	Race    MonsterID
 	Name    string
-	Collide func(m *Map, g Graphics, this, other *Critter) bool // What to do when there's a collision; true if I should delet it
+	Collide func(m *Map, g Graphics, this, other *Critter) bool `json:"-"` // What to do when there's a collision; true if I should delet it
 	Stats   StatBlock
 	Female  bool
 	Inv     []*Item
