@@ -22,6 +22,30 @@ func (m *MapTile) IsPassable() bool {
 	return TilesDir[m.Id].Passable
 }
 
+func (m *Map) CollectItems(items []*DungeonItem) []*DungeonItem {
+	for x := 0; x < m.SizeX; x++ {
+		for y := 0; y < m.SizeY; y++ {
+			if m.Tiles[x][y].IsPassable() {
+				if m.Tiles[x][y].Items != nil {
+					for _, item := range m.Tiles[x][y].Items {
+						items = append(items, &DungeonItem{x, y, item})
+					}
+				}
+			}
+		}
+	}
+	return items
+}
+
+func (m *Map) PlaceItems(items []*DungeonItem) {
+	for _, item := range items {
+		if m.Tiles[item.X][item.Y].Items == nil {
+			m.Tiles[item.X][item.Y].Items = make([]*Item, 0, 3)
+		}
+		m.Tiles[item.X][item.Y].Items = append(m.Tiles[item.X][item.Y].Items, item.It)
+	}
+}
+
 func Move(m *Map, who *Critter, dx, dy int) *Critter {
 	x, y := who.X+dx, who.Y+dy
 	passable, target := m.GetPassable(x, y)

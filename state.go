@@ -34,6 +34,13 @@ type StateDungeon struct {
 	Depth    int
 	Visited  []bool
 	Monsters [][]*Critter
+	Items    [][]*DungeonItem
+}
+
+type DungeonItem struct {
+	X  int
+	Y  int
+	It *Item
 }
 
 func init() {
@@ -50,16 +57,21 @@ func DigDungeon(d int) *StateDungeon {
 		d,
 		make([]bool, d+1),
 		make([][]*Critter, d+1),
+		make([][]*DungeonItem, d+1),
 	}
 	return &ret
 }
 
-func (d *StateDungeon) GetDunLevel(oldelevation, elevation int, monlist []*Critter) (*Map, []*Critter, []SpawnRegion, error) {
+func (d *StateDungeon) GetDunLevel(oldelevation, elevation int, monlist []*Critter, items []*DungeonItem) (*Map, []*Critter, []SpawnRegion, error) {
 	debug.Print("Called get dunlevel with args", oldelevation, elevation, monlist)
 	d.Visited[oldelevation] = true
 	d.Monsters[oldelevation] = make([]*Critter, len(monlist))
 	copy(d.Monsters[oldelevation], monlist)
 	debug.Print("Copy d.Monsters, monlist: ", d.Monsters[oldelevation], monlist)
+	if oldelevation != 0 && items != nil {
+		d.Items[oldelevation] = make([]*DungeonItem, len(items))
+		copy(d.Items[oldelevation], items)
+	}
 	if elevation <= 0 || elevation > d.Depth {
 		return nil, []*Critter{}, []SpawnRegion{}, errors.New("Outside of dungeon range")
 	}
@@ -78,6 +90,7 @@ func (d *StateDungeon) GetDunLevel(oldelevation, elevation int, monlist []*Critt
 				m.Tiles[mon.X][mon.Y].Here = mon
 			}
 		}
+		m.PlaceItems(d.Items[elevation])
 	}
 	return m, d.Monsters[elevation], sp, nil
 }

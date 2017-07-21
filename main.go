@@ -78,7 +78,7 @@ func MainLoopOverworld(g Graphics, i Input, state State, player *Critter, over *
 }
 
 func MainLoopDungeon(g Graphics, i Input, state State, player *Critter, mydun *StateDungeon) bool {
-	dunlevel, duncritters, _, _ := mydun.GetDunLevel(0, 1, []*Critter{})
+	dunlevel, duncritters, _, _ := mydun.GetDunLevel(0, 1, []*Critter{}, nil)
 	state.Monsters = make([]*Critter, len(duncritters), len(duncritters))
 	debug.Print("Copy to from: ", state.Monsters, duncritters)
 	copy(state.Monsters, duncritters)
@@ -95,7 +95,11 @@ func MainLoopDungeon(g Graphics, i Input, state State, player *Critter, mydun *S
 			if dunlevel.Tiles[player.X][player.Y].Id == TileStairDown {
 				state.Out.Message("You climb down the stairs...")
 				state.Dungeon++
-				dunlevel, duncritters, _, _ = mydun.GetDunLevel(state.Dungeon-1, state.Dungeon, state.Monsters)
+				items := make([]*DungeonItem, 0, 20)
+				if state.Dungeon > 1 {
+					items = dunlevel.CollectItems(items)
+				}
+				dunlevel, duncritters, _, _ = mydun.GetDunLevel(state.Dungeon-1, state.Dungeon, state.Monsters, items)
 				state.Monsters = make([]*Critter, len(duncritters), len(duncritters))
 				copy(state.Monsters, duncritters)
 				dunlevel.PlaceCritterAtUpStairs(player)
@@ -111,7 +115,9 @@ func MainLoopDungeon(g Graphics, i Input, state State, player *Critter, mydun *S
 					state.Out.Message("You climb up the stairs...")
 				}
 				state.Dungeon--
-				dunlevel, duncritters, _, _ = mydun.GetDunLevel(state.Dungeon+1, state.Dungeon, state.Monsters)
+				items := make([]*DungeonItem, 0, 20)
+				items = dunlevel.CollectItems(items)
+				dunlevel, duncritters, _, _ = mydun.GetDunLevel(state.Dungeon+1, state.Dungeon, state.Monsters, items)
 				state.Monsters = make([]*Critter, len(duncritters), len(duncritters))
 				copy(state.Monsters, duncritters)
 				if state.Dungeon != 0 {
