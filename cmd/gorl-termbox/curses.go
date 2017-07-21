@@ -53,7 +53,7 @@ func (c *Curses) drawAt(dun *gorl.Map, screenx, screeny, x, y int) {
 	}
 }
 
-func (c *Curses) Dungeon(dun *gorl.Map, x, y int) {
+func (c *Curses) drawMapViewport(m *gorl.Map, x, y int) {
 	termbox.Clear(termbox.ColorDefault, termbox.ColorDefault)
 	width, height := termbox.Size()
 	leftedge := x - (width / 2)
@@ -61,12 +61,20 @@ func (c *Curses) Dungeon(dun *gorl.Map, x, y int) {
 	for screenx := 0; screenx < width; screenx++ {
 		for screeny := 0; screeny < width; screeny++ {
 			x, y := screenx+leftedge, screeny+topedge
-			if x >= 0 && x < dun.SizeX && y >= 0 && y < dun.SizeY {
-				c.drawAt(dun, screenx, screeny, x, y)
+			if x >= 0 && x < m.SizeX && y >= 0 && y < m.SizeY {
+				c.drawAt(m, screenx, screeny, x, y)
 			}
 		}
 	}
 	termbox.Flush()
+}
+
+func (c *Curses) Dungeon(dun *gorl.Map, x, y int) {
+	c.drawMapViewport(dun, x, y)
+}
+
+func (c *Curses) Overworld(overworld *gorl.Map, x, y int) {
+	c.drawMapViewport(overworld, x, y)
 }
 
 func clearLine(y, width int) {

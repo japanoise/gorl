@@ -12,9 +12,10 @@ type Map struct {
 }
 
 type MapTile struct {
-	Here  *Critter
-	Id    TileID
-	Items []*Item
+	Here   *Critter
+	Id     TileID
+	Items  []*Item
+	OwData *MapOverworldData
 }
 
 func (m *MapTile) IsPassable() bool {

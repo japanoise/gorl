@@ -10,9 +10,13 @@ func getTileSprites() map[gorl.TileID]*CursesSprite {
 	ret[gorl.TileVoid] = &CursesSprite{' ', termbox.ColorDefault, termbox.ColorDefault}
 	ret[gorl.TileWall] = &CursesSprite{'#', termbox.ColorDefault, termbox.ColorDefault}
 	ret[gorl.TileFloor] = &CursesSprite{'.', termbox.ColorDefault, termbox.ColorDefault}
-	ret[gorl.TileGrass] = &CursesSprite{',', termbox.ColorGreen | termbox.AttrReverse, termbox.ColorDefault}
+	ret[gorl.TileGrass] = &CursesSprite{',', termbox.ColorGreen, termbox.ColorDefault}
+	ret[gorl.TileGrass2] = &CursesSprite{'`', termbox.ColorGreen, termbox.ColorDefault}
 	ret[gorl.TileStairUp] = &CursesSprite{'<', termbox.ColorDefault, termbox.ColorDefault}
 	ret[gorl.TileStairDown] = &CursesSprite{'>', termbox.ColorDefault, termbox.ColorDefault}
+	ret[gorl.TileSea] = &CursesSprite{'~', termbox.ColorBlue | termbox.AttrBold, termbox.ColorDefault}
+	ret[gorl.TileFreshwater] = &CursesSprite{'~', termbox.ColorCyan | termbox.AttrReverse, termbox.ColorDefault}
+	ret[gorl.TileOverworldDungeon] = &CursesSprite{'>', termbox.ColorDefault | termbox.AttrReverse, termbox.ColorDefault}
 	return ret
 }
 

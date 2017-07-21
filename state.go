@@ -23,6 +23,7 @@ type SpawnRegion struct {
 
 type State struct {
 	Monsters []*Critter
+	CurLevel *Map
 	Dungeon  int
 	In       Input
 	Out      Graphics
@@ -55,13 +56,13 @@ func DigDungeon(d int) *StateDungeon {
 
 func (d *StateDungeon) GetDunLevel(oldelevation, elevation int, monlist []*Critter) (*Map, []*Critter, []SpawnRegion, error) {
 	debug.Print("Called get dunlevel with args", oldelevation, elevation, monlist)
-	if elevation <= 0 || elevation > d.Depth {
-		return nil, []*Critter{}, []SpawnRegion{}, errors.New("Outside of dungeon range")
-	}
 	d.Visited[oldelevation] = true
 	d.Monsters[oldelevation] = make([]*Critter, len(monlist))
 	copy(d.Monsters[oldelevation], monlist)
 	debug.Print("Copy d.Monsters, monlist: ", d.Monsters[oldelevation], monlist)
+	if elevation <= 0 || elevation > d.Depth {
+		return nil, []*Critter{}, []SpawnRegion{}, errors.New("Outside of dungeon range")
+	}
 	if !d.Visited[elevation] {
 		d.Seeds[elevation] = NewSeed()
 	}
