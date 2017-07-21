@@ -1,5 +1,7 @@
 package gorl
 
+import "github.com/japanoise/engutil"
+
 /* A creature! */
 
 type Critter struct {
@@ -68,4 +70,18 @@ func RandomCritter(elevation int) *Critter {
 		return true
 	}
 	return ret
+}
+
+func (c *Critter) GetName() string {
+	if c.Name != "" {
+		return c.Name
+	} else if c.Race == MonsterHuman {
+		if c.Female {
+			return "a woman"
+		} else {
+			return "a man"
+		}
+	} else {
+		return engutil.ASlashAn(Bestiary[c.Race].Name)
+	}
 }

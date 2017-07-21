@@ -24,10 +24,26 @@ const (
 	PlayerRight
 	PlayerClimbDown
 	PlayerClimbUp
+	PlayerLook
 	Quit
 	Warp
 )
 
+type Direction uint8
+
+const (
+	DirNorth Direction = iota
+	DirSouth
+	DirWest
+	DirEast
+	DirNE
+	DirSE
+	DirNW
+	DirSW
+	DirUp
+)
+
 type Input interface {
-	GetAction() Control /* Get one command from the input */
+	GetAction() Control                   /* Get one command from the input */
+	GetDirection(prompt string) Direction /* Get a direction to do some action */
 }

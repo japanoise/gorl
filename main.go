@@ -74,6 +74,8 @@ func MainLoop(g Graphics, i Input) {
 			target = Move(dunlevel, player, -1, 0)
 		case PlayerRight:
 			target = Move(dunlevel, player, +1, 0)
+		case PlayerLook:
+			Look(dunlevel, g, i, player)
 		case Quit:
 			playing = false
 		}

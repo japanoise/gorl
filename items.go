@@ -1,10 +1,27 @@
 package gorl
 
+import "github.com/japanoise/engutil"
+
 type Item struct {
-	Name  string
-	Spr   Sprite
-	Class ItemClassID
+	Name      string
+	Spr       Sprite
+	Class     ItemClassID
+	DamageAc  uint8 // if it's a piece of apparel, it's the AC, if it's a weapon, it's dice-damage
+	Value     int
+	MagEffect MagicID
+	MagLevel  int8
+	Bcu       BCU
 }
+
+type MagicID uint8
+
+type BCU uint8
+
+const (
+	Uncursed BCU = iota
+	Cursed
+	Blessed
+)
 
 type ItemClass struct {
 	Spr  Sprite
@@ -29,9 +46,60 @@ func init() {
 }
 
 func NewItemOfClass(name string, class ItemClassID) *Item {
-	return &Item{name, ItemClassDir[class].Spr, class}
+	ret := &Item{}
+	ret.Name = name
+	ret.Class = class
+	ret.Spr = ItemClassDir[class].Spr
+	return ret
 }
 
-func GetGoldCoin() *Item {
-	return NewItemOfClass("gold coin", ItemClassCurrency)
+func GetGoldCoins(value int) *Item {
+	ret := NewItemOfClass("gold coin", ItemClassCurrency)
+	ret.Value = value
+	return ret
+}
+
+func (i *Item) DoDamage() int {
+	if i.Class == ItemClassWeapon {
+		return DiceRoll(i.DamageAc)
+	} else {
+		return 1
+	}
+}
+
+func (i *Item) GetAC() uint8 {
+	if i.Class == ItemClassApp {
+		return i.DamageAc
+	} else {
+		return 0
+	}
+}
+
+func NewWeapon(name string, value int, mag MagicID, magl int8, bcu BCU, damageDice uint8) *Item {
+	ret := NewItemOfClass(name, ItemClassWeapon)
+	ret.Value = value
+	ret.MagEffect = mag
+	ret.MagLevel = magl
+	ret.Bcu = bcu
+	ret.DamageAc = damageDice
+	return ret
+}
+
+func NewApparel(name string, value int, mag MagicID, magl int8, bcu BCU, ac uint8) *Item {
+	ret := NewItemOfClass(name, ItemClassApp)
+	ret.Value = value
+	ret.MagEffect = mag
+	ret.MagLevel = magl
+	ret.Bcu = bcu
+	ret.DamageAc = ac
+	return ret
+}
+
+func (i *Item) Describe() string {
+	switch i.Class {
+	case ItemClassCurrency:
+		return engutil.Numbered(i.Name, i.Value)
+	default:
+		return i.Name
+	}
 }

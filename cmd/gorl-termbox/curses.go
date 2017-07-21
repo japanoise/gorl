@@ -135,6 +135,8 @@ func (c *Curses) GetAction() gorl.Control {
 				return gorl.PlayerClimbUp
 			case '>':
 				return gorl.PlayerClimbDown
+			case ':':
+				return gorl.PlayerLook
 			default:
 				return gorl.DoNothing
 			}
@@ -155,6 +157,30 @@ func (c *Curses) Message(str string) {
 	}
 	clearLine(0, width)
 	termbox.Flush()
+}
+
+func (c *Curses) GetDirection(prompt string) gorl.Direction {
+	drawString(0, 0, prompt)
+	termbox.Flush()
+	ev := termbox.PollEvent()
+	for ev.Type != termbox.EventKey {
+		ev = termbox.PollEvent()
+	}
+	if ev.Ch == 0 {
+		switch ev.Key {
+		case termbox.KeyArrowUp:
+			return gorl.DirNorth
+		case termbox.KeyArrowDown:
+			return gorl.DirSouth
+		case termbox.KeyArrowLeft:
+			return gorl.DirWest
+		case termbox.KeyArrowRight:
+			return gorl.DirEast
+		default:
+			return gorl.DirUp
+		}
+	}
+	return gorl.DirUp
 }
 
 func drawString(x, y int, str string) {

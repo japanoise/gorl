@@ -69,7 +69,7 @@ func (d *StateDungeon) GetDunLevel(oldelevation, elevation int, monlist []*Critt
 	m, sp := DunGen(elevation)
 	DunAddFeatures(m, sp, elevation, d.Depth)
 	if !d.Visited[elevation] {
-		d.Monsters[elevation] = Populate(m, sp)
+		d.Monsters[elevation] = Populate(m, sp, elevation)
 		d.Visited[elevation] = true
 	} else {
 		for _, mon := range d.Monsters[elevation] {
@@ -184,13 +184,13 @@ func DunAddFeatures(m *Map, spawnrooms []SpawnRegion, elevation, maxdepth int) {
 }
 
 // Populate our beautiful dungeon with treasure and monsters!!!
-func Populate(dungeon *Map, spawnrooms []SpawnRegion) []*Critter {
+func Populate(dungeon *Map, spawnrooms []SpawnRegion, elevation int) []*Critter {
 	ret := make([]*Critter, len(spawnrooms))
 	for i, room := range spawnrooms {
 		mons := RandomCritter(dungeon.Elevation)
 		ret[i] = mons
 		PlaceCritterInRoom(mons, dungeon, room)
-		PlaceItemInRoom(GetGoldCoin(), dungeon, room)
+		PlaceItemInRoom(GetGoldCoins(DiceRoll(Dice(uint8(elevation), 6))), dungeon, room)
 	}
 	return ret
 }
