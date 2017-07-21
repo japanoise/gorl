@@ -85,7 +85,7 @@ func eraseCh(x, y int) {
 
 func (c *Curses) GetString(prompt string, empty bool) string {
 	ret := termutil.Prompt(prompt, nil)
-	for empty && ret == "" {
+	for !empty && ret == "" {
 		ret = termutil.Prompt(prompt, nil)
 	}
 	termbox.HideCursor()
