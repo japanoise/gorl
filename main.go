@@ -20,7 +20,7 @@ func MainLoop(g Graphics, i Input) error {
 	defer state.Out.End()
 	playing := true
 	for playing {
-		menuitem := state.Out.MenuIndex("Gorl", []string{"New Game", "Load Game", "Quit"})
+		menuitem := state.Out.MainMenu([]string{"New Game", "Load Game", "Quit"})
 		if menuitem == 0 {
 			state.CurLevel = nil
 			state.Monsters = nil

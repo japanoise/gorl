@@ -6,10 +6,24 @@ package main
 */
 
 import (
+	"strings"
+
 	"github.com/japanoise/gorl"
 	"github.com/japanoise/termbox-util"
 	"github.com/nsf/termbox-go"
 )
+
+// It's beautiful.
+const logo string = `   .@@@@@@@@@@@@@b                         @@@
+  @@@*           /                         @@@
+ @@@                                       @@@
+%@@,                                       @@@
+@@@        ,,,,,,,                         @@@
+@@@        @@@@@@@.    @@@@@@@.   @@@@*/,  @@@
+*@@#           *@@.   @@     %@   @@       @@@
+ @@@.          *@@.   @@      @(  @@       @@@
+  #@@@,        (@@.   @@     &@   @@       @@@
+    .@@@@@@@@@@@&      &@@@@@@    @@       @@@@@@@@@@@@@`
 
 type Curses struct {
 	Sprites     map[gorl.Sprite]*CursesSprite
@@ -202,5 +216,57 @@ func drawStringDetails(x, y int, str string, fg, bg termbox.Attribute) {
 	for _, runeValue := range str {
 		termbox.SetCell(x+os, y, runeValue, fg, bg)
 		os += termutil.Runewidth(runeValue)
+	}
+}
+
+func (c *Curses) MainMenu(choices []string) int {
+	sel := 0
+	quip := gorl.GetQuip()
+	qw := termutil.RunewidthStr(quip)
+	logolines := strings.Split(logo, "\n")
+	logoheight := len(logolines)
+	logowidth := len(logolines[logoheight-1])
+	widths := make([]int, len(choices))
+	for i, choice := range choices {
+		widths[i] = termutil.RunewidthStr(choice)
+	}
+	for {
+		termbox.Clear(termbox.ColorDefault, termbox.ColorDefault)
+		sx, _ := termbox.Size()
+		offsetx := (sx - logowidth) / 2
+		for li, line := range logolines {
+			for i, ru := range line { //it's definitely just ascii here, so it should be ok to treat it as width 1
+				termbox.SetCell(offsetx+i, li+1, ru, termbox.ColorDefault, termbox.ColorDefault)
+			}
+		}
+		for i, choice := range choices {
+			if i == sel {
+				offsetx = (sx - (widths[i] + 4)) / 2
+				termutil.Printstring("> "+choice+" <", offsetx, logoheight+4+i)
+			} else {
+				offsetx = (sx - widths[i]) / 2
+				termutil.Printstring(choice, offsetx, logoheight+4+i)
+			}
+		}
+		offsetx = (sx - qw) / 2
+		termutil.PrintstringColored(termbox.ColorRed, quip, offsetx, logoheight+2)
+		termbox.Flush()
+		ev := termbox.PollEvent()
+		if ev.Type == termbox.EventKey {
+			if ev.Ch == 0 {
+				switch ev.Key {
+				case termbox.KeyEnter:
+					return sel
+				case termbox.KeyArrowDown:
+					if sel != len(choices)-1 {
+						sel++
+					}
+				case termbox.KeyArrowUp:
+					if sel != 0 {
+						sel--
+					}
+				}
+			}
+		}
 	}
 }
