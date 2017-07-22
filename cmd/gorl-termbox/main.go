@@ -8,7 +8,7 @@ import (
 
 func main() {
 	c := NewCurses()
-	err := gorl.MainLoop(c, c)
+	err := gorl.StartGame(c, c)
 	if err != nil {
 		c.End()
 		fmt.Println(err.Error())

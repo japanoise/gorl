@@ -4,7 +4,7 @@ import (
 	"strconv"
 )
 
-func MainLoop(g Graphics, i Input) error {
+func StartGame(g Graphics, i Input) error {
 	state := &State{
 		[]*Critter{},
 		nil,
