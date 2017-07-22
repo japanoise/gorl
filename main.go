@@ -28,7 +28,7 @@ func MainLoop(g Graphics, i Input) error {
 			player := GetMonster(MonsterHuman)
 			player.Name = state.Out.GetString("Your name?", false)
 			over := OverworldGen(player, 15, 15)
-			MainLoopOverworld(state, player, over)
+			doMainLoop(state, player, over, nil)
 		} else if menuitem == 1 {
 			player, newstate, over, err := LoadGame(state)
 			if err != nil {
@@ -39,16 +39,15 @@ func MainLoop(g Graphics, i Input) error {
 				state.Monsters = newstate.Monsters
 				state.Dungeon = newstate.Dungeon
 			}
-			if state.Dungeon > 0 {
-				quit := MainLoopDungeon(state, player, over.M.Tiles[over.SavedPx][over.SavedPy].OwData.Dungeon, over, false)
-				if quit {
-					continue
-				}
+			if state.Dungeon <= 0 {
+				player.X = over.SavedPx
+				player.Y = over.SavedPy
+				state.Dungeon = 0
+				state.CurLevel = over.M
+				doMainLoop(state, player, over, nil)
+			} else {
+				doMainLoop(state, player, over, over.M.Tiles[over.SavedPx][over.SavedPy].OwData.Dungeon)
 			}
-			player.X = over.SavedPx
-			player.Y = over.SavedPy
-			state.Dungeon = 0
-			MainLoopOverworld(state, player, over)
 		} else {
 			playing = false
 		}
@@ -56,34 +55,42 @@ func MainLoop(g Graphics, i Input) error {
 	return nil
 }
 
-/* Two different main loops... pretty harmful. Will fuse these when there's more stability in the api*/
-
-func MainLoopOverworld(state *State, player *Critter, over *Overworld) {
-	state.CurLevel = over.M
+func doMainLoop(state *State, player *Critter, over *Overworld, stdun *StateDungeon) {
+	mydun := stdun
 	playing := true
+	msg := ""
+	showmsg := false
+	if state.Dungeon > 0 {
+		state.CurLevel.Tiles[player.X][player.Y].Here = player
+	} else {
+		state.CurLevel = over.M
+	}
 	for playing {
-		state.Out.Overworld(over.M, player.X, player.Y)
-		act := state.In.GetAction()
+		// Draw the level
+		if state.Dungeon > 0 {
+			state.Out.Dungeon(state.CurLevel, player.X, player.Y)
+		} else {
+			state.Out.Overworld(over.M, player.X, player.Y)
+		}
+		if showmsg { // show any delayed messages
+			state.Out.Message(msg)
+			showmsg = false
+		}
 		var target *Critter
-		switch act {
-		case PlayerClimbDown:
-			if state.CurLevel.Tiles[player.X][player.Y].Id == TileOverworldDungeon {
-				tile := state.CurLevel.Tiles[player.X][player.Y]
-				if tile.OwData == nil || tile.OwData.Dungeon == nil {
-					state.Out.Message("The entrance has caved in.")
-				} else {
-					state.Out.Message("You make your way down into the murky depths...")
-					over.SavedPx = player.X
-					over.SavedPy = player.Y
-					state.Dungeon = 1
-					playing = !MainLoopDungeon(state, player, tile.OwData.Dungeon, over, true)
-					state.Dungeon = 0
-					player.X = over.SavedPx
-					player.Y = over.SavedPy
-				}
-			}
+		act := state.In.GetAction() // Poll for an action
+		switch act {                // Act on the action
 		case PlayerClimbUp:
-			state.Out.Message("There are no stairs to climb up here!")
+			if state.Dungeon <= 0 {
+				state.Out.Message("There are no stairs to climb up here!")
+			} else {
+				dungeonclimbup(state, player, over, mydun)
+			}
+		case PlayerClimbDown:
+			if state.Dungeon <= 0 {
+				mydun = overdown(state, player, over)
+			} else {
+				dungeonclimbdown(state, player, over, mydun)
+			}
 		case Warp:
 			x, err := strconv.Atoi(state.Out.GetString("x", false))
 			y, err2 := strconv.Atoi(state.Out.GetString("y", false))
@@ -117,10 +124,12 @@ func MainLoopOverworld(state *State, player *Critter, over *Overworld) {
 		case Quit:
 			playing = false
 		}
+
+		// End of actions, now act on the consequences
 		if target != nil {
 			delete := Attack(true, true, state.CurLevel, state.Out, player, target)
-			state.Out.Message("You have defeated " + target.GetTheName())
 			if delete {
+				state.Out.Message("You have defeated " + target.GetTheName())
 				target.Delete(state.CurLevel)
 				for i, crit := range state.Monsters {
 					if crit == target {
@@ -129,133 +138,89 @@ func MainLoopOverworld(state *State, player *Critter, over *Overworld) {
 				}
 			}
 		}
+
+		// If the player is standing on any items, snarf them to the player's inventory
+		if state.CurLevel != nil && state.CurLevel.Tiles[player.X][player.Y].Items != nil {
+			player.SnarfItems(state.CurLevel.Tiles[player.X][player.Y].Items)
+			msg = ""
+			showmsg = false
+			for _, item := range state.CurLevel.Tiles[player.X][player.Y].Items {
+				msg += item.DescribeExtra() + ","
+				showmsg = true // Delay showing the message until after the screen is redrawn
+			}
+			state.CurLevel.Tiles[player.X][player.Y].Items = []*Item{}
+		}
 	}
 }
 
-func MainLoopDungeon(state *State, player *Critter, mydun *StateDungeon, ow *Overworld, climbdown bool) bool {
-	var dunlevel *Map
-	var duncritters []*Critter
-	if climbdown {
-		dunlevel, duncritters, _, _ = mydun.GetDunLevel(0, 1, []*Critter{}, nil)
+func dungeonclimbup(state *State, player *Critter, over *Overworld, mydun *StateDungeon) {
+	if state.CurLevel.Tiles[player.X][player.Y].Id == TileStairUp {
+		if state.Dungeon == 1 {
+			state.Out.Message("There's daylight at the top of the stairs!")
+		} else {
+			state.Out.Message("You climb up the stairs...")
+		}
+		state.Dungeon--
+		items := make([]*DungeonItem, 0, 20)
+		items = state.CurLevel.CollectItems(items)
+		var duncritters []*Critter
+		state.CurLevel, duncritters, _, _ = mydun.GetDunLevel(state.Dungeon+1, state.Dungeon, state.Monsters, items)
 		state.Monsters = make([]*Critter, len(duncritters), len(duncritters))
-		debug.Print("Copy to from: ", state.Monsters, duncritters)
 		copy(state.Monsters, duncritters)
-		debug.Print("Copy to from: ", state.Monsters, duncritters)
-		dunlevel.PlaceCritterAtUpStairs(player)
+		if state.Dungeon == 0 {
+			player.X = over.SavedPx
+			player.Y = over.SavedPy
+			state.CurLevel = over.M
+		} else {
+			state.CurLevel.PlaceCritterAtDownStairs(player)
+		}
+	} else if state.CurLevel.Tiles[player.X][player.Y].Id == TileStairDown {
+		state.Out.Message("These stairs only lead down!")
 	} else {
-		dunlevel = state.CurLevel
-		duncritters = state.Monsters
-		dunlevel.Tiles[player.X][player.Y].Here = player
+		state.Out.Message("There are no stairs here!")
 	}
+}
 
-	msg := ""
-	showmsg := false
-	playing := true
-	for playing {
-		state.Out.Dungeon(dunlevel, player.X, player.Y)
-		if showmsg {
-			state.Out.Message(msg)
-			showmsg = false
-		}
-		act := state.In.GetAction()
-		var target *Critter
-		switch act {
-		case PlayerClimbDown:
-			if dunlevel.Tiles[player.X][player.Y].Id == TileStairDown {
-				state.Out.Message("You climb down the stairs...")
-				state.Dungeon++
-				items := make([]*DungeonItem, 0, 20)
-				if state.Dungeon > 1 {
-					items = dunlevel.CollectItems(items)
-				}
-				dunlevel, duncritters, _, _ = mydun.GetDunLevel(state.Dungeon-1, state.Dungeon, state.Monsters, items)
-				state.Monsters = make([]*Critter, len(duncritters), len(duncritters))
-				copy(state.Monsters, duncritters)
-				dunlevel.PlaceCritterAtUpStairs(player)
-			} else if dunlevel.Tiles[player.X][player.Y].Id == TileStairUp {
-				state.Out.Message("These stairs only lead up!")
-			} else {
-				state.Out.Message("There are no stairs here!")
-			}
-		case PlayerClimbUp:
-			if dunlevel.Tiles[player.X][player.Y].Id == TileStairUp {
-				if state.Dungeon == 1 {
-					state.Out.Message("There's daylight at the top of the stairs!")
-					playing = false
-				} else {
-					state.Out.Message("You climb up the stairs...")
-				}
-				state.Dungeon--
-				items := make([]*DungeonItem, 0, 20)
-				items = dunlevel.CollectItems(items)
-				dunlevel, duncritters, _, _ = mydun.GetDunLevel(state.Dungeon+1, state.Dungeon, state.Monsters, items)
-				state.Monsters = make([]*Critter, len(duncritters), len(duncritters))
-				copy(state.Monsters, duncritters)
-				if state.Dungeon != 0 {
-					dunlevel.PlaceCritterAtDownStairs(player)
-				}
-			} else if dunlevel.Tiles[player.X][player.Y].Id == TileStairDown {
-				state.Out.Message("These stairs only lead down!")
-			} else {
-				state.Out.Message("There are no stairs here!")
-			}
-		case Warp:
-			x, err := strconv.Atoi(state.Out.GetString("x", false))
-			y, err2 := strconv.Atoi(state.Out.GetString("y", false))
-			if err != nil || err2 != nil {
-				continue
-			}
-			target = Move(dunlevel, player, x, y)
-		case PlayerDown:
-			target = Move(dunlevel, player, 0, +1)
-		case PlayerUp:
-			target = Move(dunlevel, player, 0, -1)
-		case PlayerLeft:
-			target = Move(dunlevel, player, -1, 0)
-		case PlayerRight:
-			target = Move(dunlevel, player, +1, 0)
-		case PlayerLook:
-			Look(state.CurLevel, state.Out, state.In, player)
-		case PlayerInventory:
-			UseItem(state.Out, player, ShowItemList(state.Out, player.Gold, player.Inv))
-		case PlayerStats:
-			player.CompleteDescription(state.Out)
-		case DoSaveGame:
-			items := make([]*DungeonItem, 0, 20)
-			items = dunlevel.CollectItems(items)
-			mydun.Items[state.Dungeon] = items
-			mydun.Monsters[state.Dungeon] = state.Monsters
-			err := SaveGame(player, state, ow)
-			if err == nil {
-				state.Out.Message("Game saved.")
-			} else {
-				state.Out.Message(err.Error())
-			}
-		case Quit:
-			return true
-		}
-		if target != nil {
-			delete := Attack(true, true, state.CurLevel, state.Out, player, target)
-			if delete {
-				state.Out.Message("You have defeated " + target.GetTheName())
-				target.Delete(dunlevel)
-				for i, crit := range state.Monsters {
-					if crit == target {
-						state.Monsters[i] = nil
-					}
-				}
-			}
-		}
-		if dunlevel != nil && dunlevel.Tiles[player.X][player.Y].Items != nil {
-			player.SnarfItems(dunlevel.Tiles[player.X][player.Y].Items)
-			msg = ""
-			showmsg = false
-			for _, item := range dunlevel.Tiles[player.X][player.Y].Items {
-				msg += item.DescribeExtra() + ","
-				showmsg = true
-			}
-			dunlevel.Tiles[player.X][player.Y].Items = []*Item{}
+func overdown(state *State, player *Critter, over *Overworld) *StateDungeon {
+	if state.CurLevel.Tiles[player.X][player.Y].Id == TileOverworldDungeon {
+		tile := state.CurLevel.Tiles[player.X][player.Y]
+		if tile.OwData == nil || tile.OwData.Dungeon == nil {
+			state.Out.Message("The entrance has caved in.")
+		} else {
+			state.Out.Message("You make your way down into the murky depths...")
+			over.SavedPx = player.X
+			over.SavedPy = player.Y
+			state.Dungeon = 1
+			mydun := tile.OwData.Dungeon
+			dunlevel, duncritters, _, _ := mydun.GetDunLevel(0, 1, []*Critter{}, nil)
+			state.Monsters = make([]*Critter, len(duncritters), len(duncritters))
+			debug.Print("Copy to from: ", state.Monsters, duncritters)
+			copy(state.Monsters, duncritters)
+			debug.Print("Copy to from: ", state.Monsters, duncritters)
+			dunlevel.PlaceCritterAtUpStairs(player)
+			state.CurLevel = dunlevel
+			return mydun
 		}
 	}
-	return false
+	return nil
+}
+
+func dungeonclimbdown(state *State, player *Critter, over *Overworld, mydun *StateDungeon) {
+	if state.CurLevel.Tiles[player.X][player.Y].Id == TileStairDown {
+		state.Out.Message("You climb down the stairs...")
+		state.Dungeon++
+		items := make([]*DungeonItem, 0, 20)
+		if state.Dungeon > 1 {
+			items = state.CurLevel.CollectItems(items)
+		}
+		var duncritters []*Critter
+		state.CurLevel, duncritters, _, _ = mydun.GetDunLevel(state.Dungeon-1, state.Dungeon, state.Monsters, items)
+		state.Monsters = make([]*Critter, len(duncritters), len(duncritters))
+		copy(state.Monsters, duncritters)
+		state.CurLevel.PlaceCritterAtUpStairs(player)
+	} else if state.CurLevel.Tiles[player.X][player.Y].Id == TileStairUp {
+		state.Out.Message("These stairs only lead up!")
+	} else {
+		state.Out.Message("There are no stairs here!")
+	}
 }
