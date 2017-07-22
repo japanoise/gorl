@@ -101,6 +101,10 @@ func MainLoopOverworld(state *State, player *Critter, over *Overworld) {
 			target = Move(state.CurLevel, player, +1, 0)
 		case PlayerLook:
 			Look(state.CurLevel, state.Out, state.In, player)
+		case PlayerInventory:
+			UseItem(state.Out, player, ShowItemList(state.Out, player.Gold, player.Inv))
+		case PlayerStats:
+			player.CompleteDescription(state.Out)
 		case DoSaveGame:
 			over.SavedPx = player.X
 			over.SavedPy = player.Y
@@ -144,9 +148,15 @@ func MainLoopDungeon(state *State, player *Critter, mydun *StateDungeon, ow *Ove
 		dunlevel.Tiles[player.X][player.Y].Here = player
 	}
 
+	msg := ""
+	showmsg := false
 	playing := true
 	for playing {
 		state.Out.Dungeon(dunlevel, player.X, player.Y)
+		if showmsg {
+			state.Out.Message(msg)
+			showmsg = false
+		}
 		act := state.In.GetAction()
 		var target *Critter
 		switch act {
@@ -206,6 +216,10 @@ func MainLoopDungeon(state *State, player *Critter, mydun *StateDungeon, ow *Ove
 			target = Move(dunlevel, player, +1, 0)
 		case PlayerLook:
 			Look(state.CurLevel, state.Out, state.In, player)
+		case PlayerInventory:
+			UseItem(state.Out, player, ShowItemList(state.Out, player.Gold, player.Inv))
+		case PlayerStats:
+			player.CompleteDescription(state.Out)
 		case DoSaveGame:
 			items := make([]*DungeonItem, 0, 20)
 			items = dunlevel.CollectItems(items)
@@ -232,7 +246,14 @@ func MainLoopDungeon(state *State, player *Critter, mydun *StateDungeon, ow *Ove
 				}
 			}
 		}
-		if dunlevel != nil {
+		if dunlevel != nil && dunlevel.Tiles[player.X][player.Y].Items != nil {
+			player.SnarfItems(dunlevel.Tiles[player.X][player.Y].Items)
+			msg = ""
+			showmsg = false
+			for _, item := range dunlevel.Tiles[player.X][player.Y].Items {
+				msg += item.DescribeExtra() + ","
+				showmsg = true
+			}
 			dunlevel.Tiles[player.X][player.Y].Items = []*Item{}
 		}
 	}

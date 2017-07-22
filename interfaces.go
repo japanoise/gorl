@@ -27,6 +27,7 @@ type Graphics interface {
 	Dungeon(dun *Map, x, y int)                    /* Draw a dungeon level (may be a viewport) */
 	Overworld(overworld *Map, x, y int)            /* Draw the overworld (ditto) */
 	Message(msg string)                            /* Show a message; block and return when user ack's it */
+	LongMessage(msgs ...string)                    /* Multiline message */
 	Menu(prompt string, choices []string) string   /* Show a selection menu*/
 	MenuIndex(prompt string, choices []string) int /* Show a selection menu, return the index*/
 	MainMenu(choices []string) int                 /* Show a selection menu, return the index. Implementor is requested to make it fancy. */
@@ -50,6 +51,8 @@ const (
 	PlayerClimbDown
 	PlayerClimbUp
 	PlayerLook
+	PlayerInventory
+	PlayerStats
 	Quit
 	Warp
 	DoSaveGame

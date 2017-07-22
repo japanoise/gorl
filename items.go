@@ -1,6 +1,10 @@
 package gorl
 
-import "github.com/japanoise/engutil"
+import (
+	"fmt"
+
+	"github.com/japanoise/engutil"
+)
 
 type Item struct {
 	Name      string
@@ -101,5 +105,75 @@ func (i *Item) Describe() string {
 		return engutil.Numbered(i.Name, i.Value)
 	default:
 		return i.Name
+	}
+}
+
+func (i *Item) DescribeExtra() string {
+	ret := i.Describe()
+	switch i.Class {
+	case ItemClassWeapon:
+		ret += fmt.Sprintf(" [%s]", GetSmallDiceString(i.DamageAc))
+	case ItemClassApp:
+		ret += fmt.Sprintf(" [AC %d]", i.DamageAc)
+	}
+	return ret
+}
+
+func ShowItemList(g Graphics, gold int, items []*Item) *Item {
+	choices := make([]string, len(items)+1)
+	choices[0] = "<Cancel>"
+	for i := range items {
+		choices[i+1] = items[i].DescribeExtra()
+	}
+	choice := g.MenuIndex(fmt.Sprintf("Inventory (%d gold)", gold), choices)
+	if choice == 0 {
+		return nil
+	} else {
+		return items[choice-1]
+	}
+}
+
+func UseItem(g Graphics, player *Critter, item *Item) {
+	if item == nil {
+		return
+	}
+	var store *Item = nil
+	if item.Class == ItemClassApp {
+		if player.Armor != nil {
+			g.Message("You remove " + item.DescribeExtra())
+			store = player.Armor
+		}
+		g.Message("You don " + item.DescribeExtra())
+		player.Armor = item
+	} else if item.Class == ItemClassWeapon {
+		if player.Weapon != nil {
+			g.Message("You stow " + item.DescribeExtra())
+			store = player.Weapon
+		}
+		g.Message("You ready " + item.DescribeExtra())
+		player.Weapon = item
+	} else {
+		g.Message("There doesn't seem to be much use for that item.")
+		return
+	}
+	if store != nil {
+		for i, invitem := range player.Inv {
+			if invitem == item {
+				player.Inv[i] = store
+			}
+		}
+	} else {
+		delindex := -1
+		for i, invitem := range player.Inv {
+			if invitem == item {
+				delindex = i
+			}
+		}
+		if delindex == -1 {
+			return
+		}
+		player.Inv[delindex] = player.Inv[len(player.Inv)-1]
+		player.Inv[len(player.Inv)-1] = nil
+		player.Inv = player.Inv[:len(player.Inv)-1]
 	}
 }

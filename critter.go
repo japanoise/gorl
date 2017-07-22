@@ -1,6 +1,10 @@
 package gorl
 
-import "github.com/japanoise/engutil"
+import (
+	"fmt"
+
+	"github.com/japanoise/engutil"
+)
 
 /* A creature! */
 
@@ -12,6 +16,9 @@ type Critter struct {
 	Stats  StatBlock
 	Female bool
 	Inv    []*Item
+	Gold   int
+	Weapon *Item
+	Armor  *Item
 }
 
 type StatBlock struct {
@@ -52,6 +59,15 @@ func (c *Critter) Delete(m *Map) {
 	if m.Tiles[c.X][c.Y].Here == c {
 		m.Tiles[c.X][c.Y].Here = nil
 	}
+	if m.Tiles[c.X][c.Y].Items == nil {
+		m.Tiles[c.X][c.Y].Items = make([]*Item, 0, len(c.Inv))
+	}
+	if c.Inv != nil {
+		m.Tiles[c.X][c.Y].Items = append(m.Tiles[c.X][c.Y].Items, c.Inv...)
+	}
+	if c.Gold > 0 {
+		m.Tiles[c.X][c.Y].Items = append(m.Tiles[c.X][c.Y].Items, GetGoldCoins(c.Gold))
+	}
 }
 
 func DefStatBlock() StatBlock {
@@ -73,6 +89,10 @@ func (c *Critter) GetName() string {
 	}
 }
 
+func (c *Critter) GetRace() Monster {
+	return Bestiary[c.Race]
+}
+
 // Returns the critter's name, or "the $RACE" if it's anonymous
 func (c *Critter) GetTheName() string {
 	if c.Name != "" {
@@ -90,7 +110,7 @@ func (c *Critter) GetRaceName() string {
 			return "man"
 		}
 	} else {
-		return Bestiary[c.Race].Name
+		return c.GetRace().Name
 	}
 }
 
@@ -99,11 +119,19 @@ func (c *Critter) RollForAttack() int {
 }
 
 func (c *Critter) GetDefence() int {
-	return 10
+	if c.Armor == nil {
+		return int(c.GetRace().BaseAC)
+	} else {
+		return int(c.Armor.GetAC())
+	}
 }
 
 func (c *Critter) RollForDamage() int {
-	return SmallDiceRoll(SmallDice(1, 6))
+	if c.Weapon == nil {
+		return SmallDiceRoll(c.GetRace().BaseDamage)
+	} else {
+		return c.Weapon.DoDamage()
+	}
 }
 
 func (c *Critter) TakeDamage(damage int) {
@@ -112,4 +140,38 @@ func (c *Critter) TakeDamage(damage int) {
 
 func (c *Critter) IsDead() bool {
 	return c.Stats.CurHp <= 0
+}
+
+func (c *Critter) SnarfItems(items []*Item) {
+	for _, item := range items {
+		if item.Class == ItemClassCurrency {
+			c.Gold += item.Value
+		} else {
+			c.Inv = append(c.Inv, item)
+		}
+	}
+}
+
+func (c *Critter) CompleteDescription(g Graphics) {
+	wield := "Wielding nothing."
+	if c.Weapon != nil {
+		wield = "Wielding " + c.Weapon.DescribeExtra()
+	}
+	wear := "Buck naked."
+	if c.Armor != nil {
+		wear = "Wearing " + c.Armor.DescribeExtra()
+	}
+	g.LongMessage(
+		fmt.Sprintf("%s the %s %s", c.Name, GetMaleFemaleStr(c.Female), c.GetRace().Name),
+		wield,
+		wear,
+	)
+}
+
+func GetMaleFemaleStr(female bool) string {
+	if female {
+		return "female"
+	} else {
+		return "male"
+	}
 }

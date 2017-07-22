@@ -3,6 +3,7 @@ package gorl
 import (
 	"fmt"
 	"math/rand"
+	"strconv"
 )
 
 func SmallDice(n, y uint8) uint8 {
@@ -18,6 +19,10 @@ func SmallDiceRoll(ndy uint8) int {
 		ret += rand.Intn(int(y)) + 1
 	}
 	return ret
+}
+
+func GetSmallDiceString(ndy uint8) string {
+	return strconv.Itoa(int(ndy>>4)) + "d" + strconv.Itoa(int(ndy&0x0E))
 }
 
 func LargeDiceRoll(n, y int) int {

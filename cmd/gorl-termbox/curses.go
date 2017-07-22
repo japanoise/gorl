@@ -160,7 +160,11 @@ func (c *Curses) GetAction() gorl.Control {
 			case ':':
 				return gorl.PlayerLook
 			case 's':
+				return gorl.PlayerStats
+			case 'S':
 				return gorl.DoSaveGame
+			case 'i':
+				return gorl.PlayerInventory
 			default:
 				return gorl.DoNothing
 			}
@@ -181,6 +185,10 @@ func (c *Curses) Message(str string) {
 	}
 	clearLine(0, width)
 	termbox.Flush()
+}
+
+func (c *Curses) LongMessage(msgs ...string) {
+	termutil.DisplayScreenMessage(msgs...)
 }
 
 func (c *Curses) GetDirection(prompt string) gorl.Direction {
