@@ -5,14 +5,13 @@ import "github.com/japanoise/engutil"
 /* A creature! */
 
 type Critter struct {
-	X       int
-	Y       int
-	Race    MonsterID
-	Name    string
-	Collide func(m *Map, g Graphics, this, other *Critter) bool `json:"-"` // What to do when there's a collision; true if I should delet it
-	Stats   StatBlock
-	Female  bool
-	Inv     []*Item
+	X      int
+	Y      int
+	Race   MonsterID
+	Name   string
+	Stats  StatBlock
+	Female bool
+	Inv    []*Item
 }
 
 type StatBlock struct {
@@ -63,12 +62,6 @@ func DefStatBlock() StatBlock {
 
 func RandomCritter(elevation int) *Critter {
 	ret := GetMonster(MonsterUnknown)
-	ret.Collide = func(m *Map, out Graphics, this, other *Critter) bool {
-		out.Message("\"Rargh! I'm a very scary monster!\"")
-		out.Message("You slap the monster about with a large piece of fish!")
-		out.Message("The monster collapses, defeated.")
-		return true
-	}
 	return ret
 }
 
@@ -77,6 +70,15 @@ func (c *Critter) GetName() string {
 		return c.Name
 	} else {
 		return engutil.ASlashAn(c.GetRaceName())
+	}
+}
+
+// Returns the critter's name, or "the $RACE" if it's anonymous
+func (c *Critter) GetTheName() string {
+	if c.Name != "" {
+		return c.Name
+	} else {
+		return "the " + c.GetRaceName()
 	}
 }
 
@@ -90,4 +92,24 @@ func (c *Critter) GetRaceName() string {
 	} else {
 		return Bestiary[c.Race].Name
 	}
+}
+
+func (c *Critter) RollForAttack() int {
+	return LargeDiceRoll(1, 20)
+}
+
+func (c *Critter) GetDefence() int {
+	return 10
+}
+
+func (c *Critter) RollForDamage() int {
+	return SmallDiceRoll(SmallDice(1, 6))
+}
+
+func (c *Critter) TakeDamage(damage int) {
+	c.Stats.CurHp -= damage
+}
+
+func (c *Critter) IsDead() bool {
+	return c.Stats.CurHp <= 0
 }

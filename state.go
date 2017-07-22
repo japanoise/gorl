@@ -217,7 +217,7 @@ func Populate(dungeon *Map, spawnrooms []SpawnRegion, elevation int) []*Critter 
 		mons := RandomCritter(dungeon.Elevation)
 		ret[i] = mons
 		PlaceCritterInRoom(mons, dungeon, room)
-		PlaceItemInRoom(GetGoldCoins(DiceRoll(Dice(uint8(elevation), 6))), dungeon, room)
+		PlaceItemInRoom(GetGoldCoins(LargeDiceRoll(elevation, 6)), dungeon, room)
 	}
 	return ret
 }

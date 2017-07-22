@@ -56,6 +56,8 @@ func MainLoop(g Graphics, i Input) error {
 	return nil
 }
 
+/* Two different main loops... pretty harmful. Will fuse these when there's more stability in the api*/
+
 func MainLoopOverworld(state *State, player *Critter, over *Overworld) {
 	state.CurLevel = over.M
 	playing := true
@@ -111,8 +113,9 @@ func MainLoopOverworld(state *State, player *Critter, over *Overworld) {
 		case Quit:
 			playing = false
 		}
-		if target != nil && target.Collide != nil {
-			delete := target.Collide(state.CurLevel, state.Out, target, player)
+		if target != nil {
+			delete := Attack(true, true, state.CurLevel, state.Out, player, target)
+			state.Out.Message("You have defeated " + target.GetTheName())
 			if delete {
 				target.Delete(state.CurLevel)
 				for i, crit := range state.Monsters {
@@ -217,9 +220,10 @@ func MainLoopDungeon(state *State, player *Critter, mydun *StateDungeon, ow *Ove
 		case Quit:
 			return true
 		}
-		if target != nil && target.Collide != nil {
-			delete := target.Collide(dunlevel, state.Out, target, player)
+		if target != nil {
+			delete := Attack(true, true, state.CurLevel, state.Out, player, target)
 			if delete {
+				state.Out.Message("You have defeated " + target.GetTheName())
 				target.Delete(dunlevel)
 				for i, crit := range state.Monsters {
 					if crit == target {

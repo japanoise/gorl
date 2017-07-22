@@ -61,7 +61,7 @@ func GetGoldCoins(value int) *Item {
 
 func (i *Item) DoDamage() int {
 	if i.Class == ItemClassWeapon {
-		return DiceRoll(i.DamageAc)
+		return SmallDiceRoll(i.DamageAc)
 	} else {
 		return 1
 	}
