@@ -19,6 +19,7 @@ type Critter struct {
 	Gold   int
 	Weapon *Item
 	Armor  *Item
+	AI     *AiData
 }
 
 type StatBlock struct {
@@ -28,23 +29,17 @@ type StatBlock struct {
 	Dex   int
 }
 
-func (c *Critter) DoMove(m *Map, x, y int) {
-	if m.Tiles[x][y].IsPassable() {
-		c.X = x
-		c.Y = y
-	}
-}
-
-func (c *Critter) Chase(m *Map, x, y int) {
+func (c *Critter) Chase(m *Map, x, y int) *Critter {
 	if x > c.X {
-		c.DoMove(m, c.X+1, c.Y)
+		return Move(m, c, 1, 0)
 	} else if x < c.X {
-		c.DoMove(m, c.X-1, c.Y)
+		return Move(m, c, -1, 0)
 	} else if y > c.Y {
-		c.DoMove(m, c.X, c.Y+1)
+		return Move(m, c, 0, 1)
 	} else if y < c.Y {
-		c.DoMove(m, c.X, c.Y-1)
+		return Move(m, c, 0, -1)
 	}
+	return nil
 }
 
 func (c *Critter) GetSprite() Sprite {

@@ -32,6 +32,7 @@ type Graphics interface {
 	MenuIndex(prompt string, choices []string) int /* Show a selection menu, return the index*/
 	MainMenu(choices []string) int                 /* Show a selection menu, return the index. Implementor is requested to make it fancy. */
 	GetString(prompt string, empty bool) string    /* Get a free string */
+	DeathScreen(player *Critter)                   /* Called when the player dies. Extra points for a tombstone. */
 }
 
 /* Input interface */

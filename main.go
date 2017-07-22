@@ -150,6 +150,14 @@ func doMainLoop(state *State, player *Critter, over *Overworld, stdun *StateDung
 			}
 			state.CurLevel.Tiles[player.X][player.Y].Items = []*Item{}
 		}
+
+		// Make the monsters act
+		playerdead := AiOneTurn(state, player)
+		if playerdead {
+			state.Out.Message("You died!")
+			state.Out.DeathScreen(player)
+			playing = false
+		}
 	}
 }
 

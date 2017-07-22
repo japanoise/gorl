@@ -278,3 +278,10 @@ func (c *Curses) MainMenu(choices []string) int {
 		}
 	}
 }
+
+func (c *Curses) DeathScreen(player *gorl.Critter) {
+	termbox.Clear(termbox.ColorDefault, termbox.ColorDefault)
+	termutil.Printstring("Rest in peace "+player.Name, 0, 0)
+	termbox.Flush()
+	termbox.PollEvent()
+}

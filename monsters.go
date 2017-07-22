@@ -31,5 +31,5 @@ func init() {
 func GetMonster(race MonsterID) *Critter {
 	return &Critter{0, 0, race, "", DefStatBlock(), false, []*Item{
 		NewWeapon("mace", 10, 0, 0, Uncursed, SmallDice(1, 8)),
-	}, 10, nil, nil}
+	}, 10, nil, nil, nil}
 }
