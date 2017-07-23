@@ -16,8 +16,9 @@ const (
 )
 
 type Tile struct {
-	Name     string
-	Passable bool
+	Name        string
+	Passable    bool
+	Transparent bool
 }
 
 var (
@@ -27,16 +28,16 @@ var (
 func init() {
 	/* Basic Tiles */
 	TilesDir = make(map[TileID]Tile)
-	TilesDir[TileVoid] = Tile{"the void", false}
-	TilesDir[TileWall] = Tile{"solid wall", false}
-	TilesDir[TileFloor] = Tile{"stone floor", true}
-	TilesDir[TileGrass] = Tile{"grass", true}
-	TilesDir[TileGrass2] = Tile{"grass", true}
-	TilesDir[TileStairDown] = Tile{"stairs leading down", true}
-	TilesDir[TileStairUp] = Tile{"stairs leading up", true}
-	TilesDir[TileSea] = Tile{"seawater", false}
-	TilesDir[TileFreshwater] = Tile{"freshwater", false}
-	TilesDir[TileOverworldDungeon] = Tile{"cave entrance", true}
+	TilesDir[TileVoid] = Tile{"the void", false, false}
+	TilesDir[TileWall] = Tile{"solid wall", false, false}
+	TilesDir[TileFloor] = Tile{"stone floor", true, true}
+	TilesDir[TileGrass] = Tile{"grass", true, true}
+	TilesDir[TileGrass2] = Tile{"grass", true, true}
+	TilesDir[TileStairDown] = Tile{"stairs leading down", true, true}
+	TilesDir[TileStairUp] = Tile{"stairs leading up", true, true}
+	TilesDir[TileSea] = Tile{"seawater", false, true}
+	TilesDir[TileFreshwater] = Tile{"freshwater", false, true}
+	TilesDir[TileOverworldDungeon] = Tile{"cave entrance", true, true}
 }
 
 func Look(m *Map, out Graphics, in Input, player *Critter) {
@@ -118,10 +119,10 @@ func TileNSquaresInDirFromXY(m *Map, squares int, dir Direction, x, y int) *MapT
 
 // Wall tile
 func WallTile() MapTile {
-	return MapTile{nil, TileWall, []*Item{}, nil}
+	return MapTile{nil, TileWall, []*Item{}, nil, false, false}
 }
 
 // Floor tile
 func FloorTile() MapTile {
-	return MapTile{nil, TileFloor, []*Item{}, nil}
+	return MapTile{nil, TileFloor, []*Item{}, nil, false, false}
 }

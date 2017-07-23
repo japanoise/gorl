@@ -1,5 +1,7 @@
 package gorl
 
+import "math"
+
 type Map struct {
 	Tiles       [][]MapTile
 	SizeX       int
@@ -16,6 +18,8 @@ type MapTile struct {
 	Id     TileID
 	Items  []*Item
 	OwData *MapOverworldData
+	Lit    bool
+	Disc   bool
 }
 
 func (m *MapTile) IsPassable() bool {
@@ -58,8 +62,38 @@ func Move(m *Map, who *Critter, dx, dy int) *Critter {
 	return target
 }
 
-func (m *Map) GetPassable(x, y int) (bool, *Critter) {
+func (m *Map) CanSeeThrough(x, y int) bool {
+	if !m.OOB(x, y) {
+		return TilesDir[m.Tiles[x][y].Id].Transparent == false && m.Tiles[x][y].Here == nil
+	} else {
+		return false
+	}
+}
+
+func (m *Map) Lit(x, y int) {
+	if !m.OOB(x, y) {
+		m.Tiles[x][y].Lit = true
+		m.Tiles[x][y].Disc = true
+	}
+}
+
+func (m *Map) UnLit(x, y int) {
+	if !m.OOB(x, y) {
+		m.Tiles[x][y].Lit = false
+	}
+}
+
+// Is a point out-of-bounds?
+func (m *Map) OOB(x, y int) bool {
 	if x < m.SizeX && x >= 0 && y < m.SizeY && y >= 0 {
+		return false
+	} else {
+		return true
+	}
+}
+
+func (m *Map) GetPassable(x, y int) (bool, *Critter) {
+	if !m.OOB(x, y) {
 		return m.Tiles[x][y].IsPassable(), m.Tiles[x][y].Here
 	} else {
 		return false, nil
@@ -93,4 +127,90 @@ func GetBlankMap(elevation, sizex, sizey int) *Map {
 		}
 	}
 	return &retval
+}
+
+func CalcVisibility(m *Map, player *Critter, light int) {
+	clearlight(m, player, light)
+	fov(m, player.X, player.Y, light)
+}
+
+func clearlight(m *Map, player *Critter, light int) {
+	for x := player.X - light - 1; x < player.X+light+1; x++ {
+		for y := player.Y - light - 1; y < player.Y+light+1; y++ {
+			m.UnLit(x, y)
+		}
+	}
+}
+
+func fov(m *Map, x, y int, radius int) {
+	for i := -radius; i <= radius; i++ { //iterate out of map bounds as well (radius^1)
+		for j := -radius; j <= radius; j++ { //(radius^2)
+			if i*i+j*j < radius*radius {
+				los(m, x, y, x+i, y+j)
+			}
+		}
+	}
+}
+
+/* Los calculation http://www.roguebasin.com/index.php?title=LOS_using_strict_definition */
+func los(m *Map, x0, y0, x1, y1 int) {
+	// By taking source by reference, litting can be done outside of this function which would be better made generic.
+	var sx int
+	var sy int
+	var dx int
+	var dy int
+	var dist float64
+
+	dx = x1 - x0
+	dy = y1 - y0
+
+	//determine which quadrant to we're calculating: we climb in these two directions
+	if x0 < x1 { //sx = (x0 < x1) ? 1 : -1;
+		sx = 1
+	} else {
+		sx = -1
+	}
+	if y0 < y1 { //sy = (y0 < y1) ? 1 : -1;
+		sy = 1
+	} else {
+		sy = -1
+	}
+
+	xnext := x0
+	ynext := y0
+
+	//calculate length of line to cast (distance from start to final tile)
+	dist = sqrt(dx*dx + dy*dy)
+
+	for xnext != x1 || ynext != y1 { //essentially casting a ray of length radius: (radius^3)
+		if m.OOB(xnext, ynext) {
+			return
+		}
+		if m.CanSeeThrough(xnext, ynext) {
+			//tag_memorised(xnext, ynext) // make a note of the wall
+			return
+		}
+
+		// Line-to-point distance formula < 0.5
+		if abs(dy*(xnext-x0+sx)-dx*(ynext-y0))/dist < 0.5 {
+			xnext += sx
+		} else if abs(dy*(xnext-x0)-dx*(ynext-y0+sy))/dist < 0.5 {
+			ynext += sy
+		} else {
+			xnext += sx
+			ynext += sy
+		}
+	}
+	m.Lit(x1, y1)
+	if !m.OOB(x1, y1) && m.Tiles[x1][y1].Here != nil && m.Tiles[x1][y1].Here.AI != nil {
+		m.Tiles[x1][y1].Here.AI.Active = true
+	}
+}
+
+func sqrt(x int) float64 {
+	return math.Sqrt(float64(x))
+}
+
+func abs(x int) float64 {
+	return math.Abs(float64(x))
 }

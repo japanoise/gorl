@@ -76,6 +76,10 @@ func RandomCritter(elevation int) *Critter {
 	return ret
 }
 
+func (c *Critter) GetXY() (int, int) {
+	return c.X, c.Y
+}
+
 func (c *Critter) GetName() string {
 	if c.Name != "" {
 		return c.Name

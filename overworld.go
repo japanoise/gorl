@@ -16,14 +16,14 @@ func OverworldGen(player *Critter, px, py int) *Overworld {
 	for x := 0; x < sizex; x++ {
 		for y := 0; y < sizey; y++ {
 			if x < 5 || y < 5 || x > sizex-5 || y > sizex-5 {
-				m.Tiles[x][y] = MapTile{nil, TileSea, []*Item{}, nil}
+				m.Tiles[x][y] = MapTile{nil, TileSea, []*Item{}, nil, false, false}
 			} else {
 				m.SetGrassTile(x, y)
 			}
 		}
 	}
-	m.Tiles[10][10] = MapTile{nil, TileOverworldDungeon, []*Item{}, &MapOverworldData{DigDungeon(5)}}
-	m.Tiles[15][10] = MapTile{nil, TileOverworldDungeon, []*Item{}, &MapOverworldData{DigDungeon(5)}}
+	m.Tiles[10][10] = MapTile{nil, TileOverworldDungeon, []*Item{}, &MapOverworldData{DigDungeon(5)}, false, false}
+	m.Tiles[15][10] = MapTile{nil, TileOverworldDungeon, []*Item{}, &MapOverworldData{DigDungeon(5)}, false, false}
 	player.X = px
 	player.Y = py
 	m.Tiles[px][py].Here = player
@@ -32,8 +32,8 @@ func OverworldGen(player *Critter, px, py int) *Overworld {
 
 func (m *Map) SetGrassTile(x, y int) {
 	if x%2 == 0 && y%2 == 0 {
-		m.Tiles[x][y] = MapTile{nil, TileGrass2, []*Item{}, nil}
+		m.Tiles[x][y] = MapTile{nil, TileGrass2, []*Item{}, nil, false, false}
 	} else {
-		m.Tiles[x][y] = MapTile{nil, TileGrass, []*Item{}, nil}
+		m.Tiles[x][y] = MapTile{nil, TileGrass, []*Item{}, nil, false, false}
 	}
 }

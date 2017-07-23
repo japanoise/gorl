@@ -56,14 +56,19 @@ func (c *Curses) End() {
 
 func (c *Curses) drawAt(dun *gorl.Map, screenx, screeny, x, y int) {
 	here := dun.Tiles[x][y].Here
-	if here == nil {
-		if len(dun.Tiles[x][y].Items) == 0 {
-			Draw(screenx, screeny, c.TileSprites[dun.Tiles[x][y].Id])
+	if dun.Tiles[x][y].Lit {
+		if here == nil {
+			if len(dun.Tiles[x][y].Items) == 0 {
+				Draw(screenx, screeny, c.TileSprites[dun.Tiles[x][y].Id])
+			} else {
+				Draw(screenx, screeny, c.Sprites[dun.Tiles[x][y].Items[0].Spr])
+			}
 		} else {
-			Draw(screenx, screeny, c.Sprites[dun.Tiles[x][y].Items[0].Spr])
+			Draw(screenx, screeny, c.Sprites[here.GetSprite()])
 		}
-	} else {
-		Draw(screenx, screeny, c.Sprites[here.GetSprite()])
+	} else if dun.Tiles[x][y].Disc {
+		sp := c.TileSprites[dun.Tiles[x][y].Id]
+		Draw(screenx, screeny, &CursesSprite{sp.Ru, termbox.ColorBlack | termbox.AttrBold, termbox.ColorDefault})
 	}
 }
 

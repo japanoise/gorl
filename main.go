@@ -68,8 +68,10 @@ func doMainLoop(state *State, player *Critter, over *Overworld, stdun *StateDung
 	for playing {
 		// Draw the level
 		if state.Dungeon > 0 {
+			CalcVisibility(state.CurLevel, player, 20) //Eventually, this will be torch level.
 			state.Out.Dungeon(state.CurLevel, player.X, player.Y)
 		} else {
+			CalcVisibility(state.CurLevel, player, 40)
 			state.Out.Overworld(over.M, player.X, player.Y)
 		}
 		if showmsg { // show any delayed messages
