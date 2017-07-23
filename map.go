@@ -1,6 +1,8 @@
 package gorl
 
-import "math"
+import (
+	"math"
+)
 
 type Map struct {
 	Tiles       [][]MapTile
@@ -52,6 +54,10 @@ func (m *Map) PlaceItems(items []*DungeonItem) {
 
 func Move(m *Map, who *Critter, dx, dy int) *Critter {
 	x, y := who.X+dx, who.Y+dy
+	return MoveAbs(m, who, x, y)
+}
+
+func MoveAbs(m *Map, who *Critter, x, y int) *Critter {
 	passable, target := m.GetPassable(x, y)
 	if passable && target == nil {
 		m.Tiles[who.X][who.Y].Here = nil

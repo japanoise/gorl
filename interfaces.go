@@ -12,6 +12,8 @@ func init() {
 		"WHERE'S YOUR @ AT",
 		"remind me to always run my architecture decisions by you :P",
 		"taking suggestions for quips btw, they have to be 80 characters or less wide",
+		"GUARDS! SIEZE HIM!!",
+		"wizard bad! you hero! go kill!",
 	}
 }
 

@@ -29,17 +29,9 @@ type StatBlock struct {
 	Dex   int
 }
 
-func (c *Critter) Chase(m *Map, x, y int) *Critter {
-	if x > c.X {
-		return Move(m, c, 1, 0)
-	} else if x < c.X {
-		return Move(m, c, -1, 0)
-	} else if y > c.Y {
-		return Move(m, c, 0, 1)
-	} else if y < c.Y {
-		return Move(m, c, 0, -1)
-	}
-	return nil
+func (c *Critter) Chase(m *Map, d *DijkstraMap) *Critter {
+	lv := d.LowestNeighbour(c.X, c.Y)
+	return MoveAbs(m, c, lv.X, lv.Y)
 }
 
 func (c *Critter) GetSprite() Sprite {

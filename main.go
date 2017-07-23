@@ -56,15 +56,18 @@ func StartGame(g Graphics, i Input) error {
 }
 
 func doMainLoop(state *State, player *Critter, over *Overworld, stdun *StateDungeon) {
-	mydun := stdun
-	playing := true
-	msg := ""
-	showmsg := false
 	if state.Dungeon > 0 {
 		state.CurLevel.Tiles[player.X][player.Y].Here = player
 	} else {
 		state.CurLevel = over.M
 	}
+	mydun := stdun
+	playing := true
+	pmoved := true
+	pdjmap := BlankDMap(state.CurLevel)
+	pdjmap.Calc(player)
+	msg := ""
+	showmsg := false
 	for playing {
 		// Draw the level
 		if state.Dungeon > 0 {
@@ -85,13 +88,13 @@ func doMainLoop(state *State, player *Critter, over *Overworld, stdun *StateDung
 			if state.Dungeon <= 0 {
 				state.Out.Message("There are no stairs to climb up here!")
 			} else {
-				dungeonclimbup(state, player, over, mydun)
+				pmoved = dungeonclimbup(state, player, over, mydun)
 			}
 		case PlayerClimbDown:
 			if state.Dungeon <= 0 {
-				mydun = overdown(state, player, over)
+				mydun, pmoved = overdown(state, player, over)
 			} else {
-				dungeonclimbdown(state, player, over, mydun)
+				pmoved = dungeonclimbdown(state, player, over, mydun)
 			}
 		case Warp:
 			x, err := strconv.Atoi(state.Out.GetString("x", false))
@@ -102,12 +105,16 @@ func doMainLoop(state *State, player *Critter, over *Overworld, stdun *StateDung
 			target = Move(state.CurLevel, player, x, y)
 		case PlayerDown:
 			target = Move(state.CurLevel, player, 0, +1)
+			pmoved = true
 		case PlayerUp:
 			target = Move(state.CurLevel, player, 0, -1)
+			pmoved = true
 		case PlayerLeft:
 			target = Move(state.CurLevel, player, -1, 0)
+			pmoved = true
 		case PlayerRight:
 			target = Move(state.CurLevel, player, +1, 0)
+			pmoved = true
 		case PlayerLook:
 			Look(state.CurLevel, state.Out, state.In, player)
 		case PlayerInventory:
@@ -153,8 +160,15 @@ func doMainLoop(state *State, player *Critter, over *Overworld, stdun *StateDung
 			state.CurLevel.Tiles[player.X][player.Y].Items = []*Item{}
 		}
 
+		// If the player's moved, recalculate the Dijkstra map
+		if pmoved {
+			pdjmap = BlankDMap(state.CurLevel)
+			pdjmap.Calc(player)
+			pmoved = false
+		}
+
 		// Make the monsters act
-		playerdead := AiOneTurn(state, player)
+		playerdead := AiOneTurn(state, player, pdjmap)
 		if playerdead {
 			state.Out.Message("You died!")
 			state.Out.DeathScreen(player)
@@ -163,7 +177,7 @@ func doMainLoop(state *State, player *Critter, over *Overworld, stdun *StateDung
 	}
 }
 
-func dungeonclimbup(state *State, player *Critter, over *Overworld, mydun *StateDungeon) {
+func dungeonclimbup(state *State, player *Critter, over *Overworld, mydun *StateDungeon) bool {
 	if state.CurLevel.Tiles[player.X][player.Y].Id == TileStairUp {
 		if state.Dungeon == 1 {
 			state.Out.Message("There's daylight at the top of the stairs!")
@@ -184,14 +198,17 @@ func dungeonclimbup(state *State, player *Critter, over *Overworld, mydun *State
 		} else {
 			state.CurLevel.PlaceCritterAtDownStairs(player)
 		}
+		return true
 	} else if state.CurLevel.Tiles[player.X][player.Y].Id == TileStairDown {
 		state.Out.Message("These stairs only lead down!")
+		return false
 	} else {
 		state.Out.Message("There are no stairs here!")
+		return false
 	}
 }
 
-func overdown(state *State, player *Critter, over *Overworld) *StateDungeon {
+func overdown(state *State, player *Critter, over *Overworld) (*StateDungeon, bool) {
 	if state.CurLevel.Tiles[player.X][player.Y].Id == TileOverworldDungeon {
 		tile := state.CurLevel.Tiles[player.X][player.Y]
 		if tile.OwData == nil || tile.OwData.Dungeon == nil {
@@ -209,13 +226,13 @@ func overdown(state *State, player *Critter, over *Overworld) *StateDungeon {
 			debug.Print("Copy to from: ", state.Monsters, duncritters)
 			dunlevel.PlaceCritterAtUpStairs(player)
 			state.CurLevel = dunlevel
-			return mydun
+			return mydun, true
 		}
 	}
-	return nil
+	return nil, false
 }
 
-func dungeonclimbdown(state *State, player *Critter, over *Overworld, mydun *StateDungeon) {
+func dungeonclimbdown(state *State, player *Critter, over *Overworld, mydun *StateDungeon) bool {
 	if state.CurLevel.Tiles[player.X][player.Y].Id == TileStairDown {
 		state.Out.Message("You climb down the stairs...")
 		state.Dungeon++
@@ -228,9 +245,11 @@ func dungeonclimbdown(state *State, player *Critter, over *Overworld, mydun *Sta
 		state.Monsters = make([]*Critter, len(duncritters), len(duncritters))
 		copy(state.Monsters, duncritters)
 		state.CurLevel.PlaceCritterAtUpStairs(player)
+		return true
 	} else if state.CurLevel.Tiles[player.X][player.Y].Id == TileStairUp {
 		state.Out.Message("These stairs only lead up!")
 	} else {
 		state.Out.Message("There are no stairs here!")
 	}
+	return false
 }
