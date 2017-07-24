@@ -16,15 +16,16 @@ focused on hacking together something worth playing.
 ## Code structure
 
 The general idea is to separate the game logic from the graphics/input. gorl is
-where all the common code goes; and different graphics backends will be 
-implemented as separate executables in the `cmd` directory. So to build the
-termbox version, you'd do:
+where all the common code goes, but it alone will not build an exectuable.
+Different graphics backends will be implemented as separate executables in the
+`cmd` directory. So to build the termbox version, you do:
 
 ``` shellsession
-$ go get github.com/japanoise/gorl/cmd/gorl-termbox
+$ go get -u github.com/japanoise/gorl/cmd/gorl-termbox
 ```
 
-The interfaces needed are in `interfaces.go`.
+The interfaces needed are in `interfaces.go`; sprites needed in `sprite.go`, and
+tiles needed are in `tiles.go`
 
 ## Licensing
 
