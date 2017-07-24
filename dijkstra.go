@@ -54,6 +54,14 @@ func (d *DijkstraMap) Calc(points ...Placed) {
 						mademutation = true
 					}
 				}
+				x1, y1 := (d.M.SizeX-1)-x, (d.M.SizeY-1)-y
+				if d.M.Tiles[x1][y1].IsPassable() {
+					ln := d.LowestNeighbour(x1, y1).Val
+					if d.Points[x1][y1] > ln+1 {
+						d.Points[x1][y1] = ln + 1
+						mademutation = true
+					}
+				}
 			}
 		}
 	}
