@@ -68,11 +68,11 @@ func MoveAbs(m *Map, who *Critter, x, y int) *Critter {
 	return target
 }
 
-func (m *Map) CanSeeThrough(x, y int) bool {
+func (m *Map) CantSeeThrough(x, y int) bool {
 	if !m.OOB(x, y) {
-		return TilesDir[m.Tiles[x][y].Id].Transparent == false && m.Tiles[x][y].Here == nil
+		return TilesDir[m.Tiles[x][y].Id].Transparent == false
 	} else {
-		return false
+		return true
 	}
 }
 
@@ -192,7 +192,7 @@ func los(m *Map, x0, y0, x1, y1 int) {
 		if m.OOB(xnext, ynext) {
 			return
 		}
-		if m.CanSeeThrough(xnext, ynext) {
+		if m.CantSeeThrough(xnext, ynext) {
 			//tag_memorised(xnext, ynext) // make a note of the wall
 			return
 		}

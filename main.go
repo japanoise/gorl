@@ -66,8 +66,6 @@ func doMainLoop(state *State, player *Critter, over *Overworld, stdun *StateDung
 	pmoved := true
 	pdjmap := BlankDMap(state.CurLevel)
 	pdjmap.Calc(player)
-	msg := ""
-	showmsg := false
 	for playing {
 		// Draw the level
 		if state.Dungeon > 0 {
@@ -76,10 +74,6 @@ func doMainLoop(state *State, player *Critter, over *Overworld, stdun *StateDung
 		} else {
 			CalcVisibility(state.CurLevel, player, 40)
 			state.Out.Overworld(over.M, player.X, player.Y)
-		}
-		if showmsg { // show any delayed messages
-			state.Out.Message(msg)
-			showmsg = false
 		}
 		var target *Critter
 		act := state.In.GetAction() // Poll for an action
@@ -151,13 +145,16 @@ func doMainLoop(state *State, player *Critter, over *Overworld, stdun *StateDung
 		// If the player is standing on any items, snarf them to the player's inventory
 		if state.CurLevel != nil && state.CurLevel.Tiles[player.X][player.Y].Items != nil {
 			player.SnarfItems(state.CurLevel.Tiles[player.X][player.Y].Items)
-			msg = ""
-			showmsg = false
+			msg := ""
+			showmsg := false
 			for _, item := range state.CurLevel.Tiles[player.X][player.Y].Items {
 				msg += item.DescribeExtra() + ","
-				showmsg = true // Delay showing the message until after the screen is redrawn
+				showmsg = true
 			}
-			state.CurLevel.Tiles[player.X][player.Y].Items = []*Item{}
+			if showmsg {
+				state.Out.Message(msg)
+				state.CurLevel.Tiles[player.X][player.Y].Items = []*Item{}
+			}
 		}
 
 		// If the player's moved, recalculate the Dijkstra map

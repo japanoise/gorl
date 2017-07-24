@@ -28,6 +28,7 @@ const logo string = `   .@@@@@@@@@@@@@b                         @@@
 type Curses struct {
 	Sprites     map[gorl.Sprite]*CursesSprite
 	TileSprites map[gorl.TileID]*CursesSprite
+	Messages    []string
 }
 
 type CursesSprite struct {
@@ -37,7 +38,7 @@ type CursesSprite struct {
 }
 
 func NewCurses() *Curses {
-	retval := &Curses{getSprites(), getTileSprites()}
+	retval := &Curses{getSprites(), getTileSprites(), nil}
 	return retval
 }
 
@@ -90,10 +91,12 @@ func (c *Curses) drawMapViewport(m *gorl.Map, x, y int) {
 
 func (c *Curses) Dungeon(dun *gorl.Map, x, y int) {
 	c.drawMapViewport(dun, x, y)
+	c.flushMessages()
 }
 
 func (c *Curses) Overworld(overworld *gorl.Map, x, y int) {
 	c.drawMapViewport(overworld, x, y)
+	c.flushMessages()
 }
 
 func clearLine(y, width int) {
@@ -180,15 +183,42 @@ func (c *Curses) GetAction() gorl.Control {
 }
 
 func (c *Curses) Message(str string) {
+	if c.Messages == nil {
+		c.Messages = []string{str}
+	} else {
+		c.Messages = append(c.Messages, str)
+	}
+}
+
+func (c *Curses) flushMessages() {
+	if c.Messages == nil || len(c.Messages) == 0 {
+		return
+	}
+	ml := len(c.Messages)
+	_, width := termbox.Size()
+	for i, msg := range c.Messages {
+		c.showMessage(msg)
+		if i != ml-1 {
+			termutil.Printstring("<more>", 0, 1)
+			termbox.Flush()
+			ev := termbox.PollEvent()
+			for ev.Type != termbox.EventKey {
+				ev = termbox.PollEvent()
+			}
+			clearLine(0, width)
+			termbox.Flush()
+		} else {
+			clearLine(1, 6)
+			termbox.Flush()
+		}
+	}
+	c.Messages = nil
+}
+
+func (c *Curses) showMessage(str string) {
 	width, _ := termbox.Size()
 	clearLine(0, width)
 	drawString(0, 0, str)
-	termbox.Flush()
-	ev := termbox.PollEvent()
-	for ev.Type != termbox.EventKey {
-		ev = termbox.PollEvent()
-	}
-	clearLine(0, width)
 	termbox.Flush()
 }
 
@@ -285,6 +315,8 @@ func (c *Curses) MainMenu(choices []string) int {
 }
 
 func (c *Curses) DeathScreen(player *gorl.Critter) {
+	c.flushMessages()
+	termbox.PollEvent()
 	termbox.Clear(termbox.ColorDefault, termbox.ColorDefault)
 	termutil.Printstring("Rest in peace "+player.Name, 0, 0)
 	termbox.Flush()
