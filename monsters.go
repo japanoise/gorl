@@ -8,6 +8,8 @@ type Monster struct {
 	SprF       Sprite
 	BaseDamage uint8
 	BaseAC     uint8
+	HitDice    uint8
+	Level      uint8
 }
 
 var Bestiary map[MonsterID]Monster
@@ -23,21 +25,30 @@ const (
 func init() {
 	Bestiary = make(map[MonsterID]Monster)
 	Bestiary[MonsterUnknown] = Monster{
-		"unknown creature", SpriteMonsterUnknown, SpriteMonsterUnknown, SmallDice(1, 6), 10,
+		"unknown creature", SpriteMonsterUnknown, SpriteMonsterUnknown,
+		SmallDice(1, 6), 10, SmallDice(1, 4), 1,
 	}
 	Bestiary[MonsterHuman] = Monster{
-		"human", SpriteHumanMale, SpriteHumanFemale, SmallDice(1, 4), 10,
+		"human", SpriteHumanMale, SpriteHumanFemale,
+		SmallDice(1, 4), 10, SmallDice(1, 4), 1,
 	}
 	Bestiary[MonsterKobold] = Monster{
-		"kobold", SpriteKoboldMale, SpriteKoboldFemale, SmallDice(1, 4), 10,
+		"kobold", SpriteKoboldMale, SpriteKoboldFemale,
+		SmallDice(1, 4), 10, SmallDice(1, 4), 1,
 	}
 	Bestiary[MonsterInfernal] = Monster{
-		"infernal", SpriteInfernalMale, SpriteInfernalFemale, SmallDice(1, 4), 10,
+		"infernal", SpriteInfernalMale, SpriteInfernalFemale,
+		SmallDice(1, 4), 10, SmallDice(1, 4), 1,
 	}
 }
 
 func GetMonster(race MonsterID, female bool) *Critter {
-	return &Critter{0, 0, race, "", DefStatBlock(), female, []*Item{
-		NewWeapon("mace", 10, 0, 0, Uncursed, SmallDice(1, 8)),
-	}, 10, nil, nil, nil}
+	monst := Bestiary[race]
+	return &Critter{0, 0, race, "", GenStatBlock(monst.HitDice, monst.Level),
+		female, []*Item{}, 0, nil, nil, nil}
+}
+
+func RandomCritter(elevation int) *Critter {
+	ret := GetMonster(MonsterUnknown, false)
+	return ret
 }

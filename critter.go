@@ -25,8 +25,8 @@ type Critter struct {
 type StatBlock struct {
 	MaxHp int
 	CurHp int
-	Str   int
-	Dex   int
+	Level uint8
+	Exp   int
 }
 
 func (c *Critter) Chase(m *Map, d *DijkstraMap) *Critter {
@@ -57,15 +57,14 @@ func (c *Critter) Delete(m *Map) {
 	}
 }
 
-func DefStatBlock() StatBlock {
-	return StatBlock{
-		10, 10, 10, 10,
+func GenStatBlock(hitdice uint8, level uint8) StatBlock {
+	hp := 0
+	for i := uint8(0); i < level; i++ {
+		hp += SmallDiceRoll(hitdice)
 	}
-}
-
-func RandomCritter(elevation int) *Critter {
-	ret := GetMonster(MonsterUnknown, false)
-	return ret
+	return StatBlock{
+		hp, hp, 0, 0,
+	}
 }
 
 func (c *Critter) GetXY() (int, int) {

@@ -16,6 +16,8 @@ func CharGen(g Graphics) *Critter {
 	choice := g.MenuIndex("Which race will you be?", choices)
 	female := g.Menu("Male or female?", []string{"male", "female"}) == "female"
 	player := GetMonster(playableRaces[choice], female)
+	player.Stats.MaxHp += 10 // Players are special and get extra health
+	player.Stats.CurHp += 10
 	player.Name = g.GetString("Your name?", false)
 	return player
 }
