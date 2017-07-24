@@ -15,6 +15,8 @@ var Bestiary map[MonsterID]Monster
 const (
 	MonsterUnknown MonsterID = iota
 	MonsterHuman
+	MonsterKobold
+	MonsterInfernal
 )
 
 // Monster definitions
@@ -26,10 +28,16 @@ func init() {
 	Bestiary[MonsterHuman] = Monster{
 		"human", SpriteHumanMale, SpriteHumanFemale, SmallDice(1, 4), 10,
 	}
+	Bestiary[MonsterKobold] = Monster{
+		"kobold", SpriteKoboldMale, SpriteKoboldFemale, SmallDice(1, 4), 10,
+	}
+	Bestiary[MonsterInfernal] = Monster{
+		"infernal", SpriteInfernalMale, SpriteInfernalFemale, SmallDice(1, 4), 10,
+	}
 }
 
-func GetMonster(race MonsterID) *Critter {
-	return &Critter{0, 0, race, "", DefStatBlock(), false, []*Item{
+func GetMonster(race MonsterID, female bool) *Critter {
+	return &Critter{0, 0, race, "", DefStatBlock(), female, []*Item{
 		NewWeapon("mace", 10, 0, 0, Uncursed, SmallDice(1, 8)),
 	}, 10, nil, nil, nil}
 }

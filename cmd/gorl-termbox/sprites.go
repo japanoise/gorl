@@ -25,6 +25,10 @@ func getSprites() map[gorl.Sprite]*CursesSprite {
 	ret[gorl.SpriteBlank] = &CursesSprite{' ', termbox.ColorDefault, termbox.ColorDefault}
 	ret[gorl.SpriteHumanMale] = &CursesSprite{'@', termbox.ColorBlue, termbox.ColorDefault}
 	ret[gorl.SpriteHumanFemale] = &CursesSprite{'@', termbox.ColorMagenta, termbox.ColorDefault}
+	ret[gorl.SpriteInfernalMale] = &CursesSprite{'&', termbox.ColorCyan, termbox.ColorDefault}
+	ret[gorl.SpriteInfernalFemale] = &CursesSprite{'&', termbox.ColorRed, termbox.ColorDefault}
+	ret[gorl.SpriteKoboldMale] = &CursesSprite{'k', termbox.ColorGreen, termbox.ColorDefault}
+	ret[gorl.SpriteKoboldFemale] = &CursesSprite{'k', termbox.ColorYellow, termbox.ColorDefault}
 	ret[gorl.SpriteMonsterUnknown] = &CursesSprite{'?', termbox.ColorRed, termbox.ColorDefault}
 	ret[gorl.SpriteItemGold] = &CursesSprite{'$', termbox.ColorYellow, termbox.ColorDefault}
 	ret[gorl.SpriteItemWeaponGeneric] = &CursesSprite{')', termbox.ColorYellow, termbox.ColorDefault}

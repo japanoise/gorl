@@ -8,6 +8,10 @@ const (
 	SpriteBlank Sprite = iota
 	SpriteHumanMale
 	SpriteHumanFemale
+	SpriteKoboldMale
+	SpriteKoboldFemale
+	SpriteInfernalMale
+	SpriteInfernalFemale
 	SpriteMonsterUnknown
 	SpriteItemGold
 	SpriteItemWeaponGeneric

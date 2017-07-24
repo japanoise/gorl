@@ -64,7 +64,7 @@ func DefStatBlock() StatBlock {
 }
 
 func RandomCritter(elevation int) *Critter {
-	ret := GetMonster(MonsterUnknown)
+	ret := GetMonster(MonsterUnknown, false)
 	return ret
 }
 

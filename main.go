@@ -25,8 +25,7 @@ func StartGame(g Graphics, i Input) error {
 			state.CurLevel = nil
 			state.Monsters = nil
 			state.Dungeon = 0
-			player := GetMonster(MonsterHuman)
-			player.Name = state.Out.GetString("Your name?", false)
+			player := CharGen(state.Out)
 			over := OverworldGen(player, 15, 15)
 			doMainLoop(state, player, over, nil)
 		} else if menuitem == 1 {
