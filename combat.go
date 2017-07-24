@@ -6,13 +6,15 @@ import (
 	"strconv"
 )
 
+const SmallDiceYMask = 0x0F
+
 func SmallDice(n, y uint8) uint8 {
-	return (n << 4) | (y & 0x0E)
+	return (n << 4) | (y & SmallDiceYMask)
 }
 
 func SmallDiceRoll(ndy uint8) int {
 	n := ndy >> 4
-	y := ndy & 0x0E
+	y := ndy & SmallDiceYMask
 	ret := 0
 	var i uint8
 	for i = 0; i < n; i++ {
@@ -22,7 +24,7 @@ func SmallDiceRoll(ndy uint8) int {
 }
 
 func GetSmallDiceString(ndy uint8) string {
-	return strconv.Itoa(int(ndy>>4)) + "d" + strconv.Itoa(int(ndy&0x0E))
+	return strconv.Itoa(int(ndy>>4)) + "d" + strconv.Itoa(int(ndy&SmallDiceYMask))
 }
 
 func LargeDiceRoll(n, y int) int {
