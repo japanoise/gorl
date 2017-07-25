@@ -42,11 +42,12 @@ const (
 
 var ItemClassDir map[ItemClassID]*ItemClass
 
-func init() {
+func initItems() error {
 	ItemClassDir = make(map[ItemClassID]*ItemClass)
 	ItemClassDir[ItemClassCurrency] = &ItemClass{SpriteItemGold, "currency"}
 	ItemClassDir[ItemClassWeapon] = &ItemClass{SpriteItemWeaponGeneric, "weapon"}
 	ItemClassDir[ItemClassApp] = &ItemClass{SpriteItemAppGeneric, "apparel"}
+	return nil
 }
 
 func NewItemOfClass(name string, class ItemClassID) *Item {

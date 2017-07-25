@@ -21,25 +21,9 @@ const (
 	MonsterInfernal
 )
 
-// Monster definitions
-func init() {
+func initMonsters() error {
 	Bestiary = make(map[MonsterID]Monster)
-	Bestiary[MonsterUnknown] = Monster{
-		"unknown creature", SpriteMonsterUnknown, SpriteMonsterUnknown,
-		SmallDice(1, 6), 10, SmallDice(1, 4), 1,
-	}
-	Bestiary[MonsterHuman] = Monster{
-		"human", SpriteHumanMale, SpriteHumanFemale,
-		SmallDice(1, 4), 10, SmallDice(1, 4), 1,
-	}
-	Bestiary[MonsterKobold] = Monster{
-		"kobold", SpriteKoboldMale, SpriteKoboldFemale,
-		SmallDice(1, 4), 10, SmallDice(1, 4), 1,
-	}
-	Bestiary[MonsterInfernal] = Monster{
-		"infernal", SpriteInfernalMale, SpriteInfernalFemale,
-		SmallDice(1, 4), 10, SmallDice(1, 4), 1,
-	}
+	return loadConfigFile("monsters.json", &Bestiary)
 }
 
 func GetMonster(race MonsterID, female bool) *Critter {

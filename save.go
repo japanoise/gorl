@@ -10,7 +10,6 @@ import (
 	"time"
 
 	"github.com/kennygrant/sanitize"
-	"github.com/mitchellh/go-homedir"
 )
 
 type SaveVersion uint64
@@ -32,35 +31,6 @@ var (
 	configdir string
 	datadir   string
 )
-
-func InitDirs() error {
-	configdir = os.Getenv("XDG_CONFIG_HOME")
-	datadir = os.Getenv("XDG_DATA_HOME")
-	if configdir == "" {
-		h, err := homedir.Dir()
-		if err != nil {
-			return err
-		}
-		configdir = h + string(os.PathSeparator) + ".config" + string(os.PathSeparator) + "gorl"
-	} else {
-		configdir += string(os.PathSeparator) + "gorl"
-	}
-	if datadir == "" {
-		h, err := homedir.Dir()
-		if err != nil {
-			return err
-		}
-		datadir = h + string(os.PathSeparator) + ".local" + string(os.PathSeparator) + "share" + string(os.PathSeparator) + "gorl"
-	} else {
-		datadir += string(os.PathSeparator) + "gorl"
-	}
-	err := os.MkdirAll(datadir, 0755)
-	if err != nil {
-		return err
-	}
-	err = os.MkdirAll(configdir, 0755)
-	return err
-}
 
 func SaveGame(player *Critter, state *State, overworld *Overworld) error {
 	data := Savedata{

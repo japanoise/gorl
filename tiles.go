@@ -25,19 +25,10 @@ var (
 	TilesDir map[TileID]Tile
 )
 
-func init() {
+func initTiles() error {
 	/* Basic Tiles */
 	TilesDir = make(map[TileID]Tile)
-	TilesDir[TileVoid] = Tile{"the void", false, false}
-	TilesDir[TileWall] = Tile{"solid wall", false, false}
-	TilesDir[TileFloor] = Tile{"stone floor", true, true}
-	TilesDir[TileGrass] = Tile{"grass", true, true}
-	TilesDir[TileGrass2] = Tile{"grass", true, true}
-	TilesDir[TileStairDown] = Tile{"stairs leading down", true, true}
-	TilesDir[TileStairUp] = Tile{"stairs leading up", true, true}
-	TilesDir[TileSea] = Tile{"seawater", false, true}
-	TilesDir[TileFreshwater] = Tile{"freshwater", false, true}
-	TilesDir[TileOverworldDungeon] = Tile{"cave entrance", true, true}
+	return loadConfigFile("tiles.json", &TilesDir)
 }
 
 func Look(m *Map, out Graphics, in Input, player *Critter) {

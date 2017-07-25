@@ -1,7 +1,12 @@
 package gorl
 
 import (
+	"encoding/json"
+	"log"
+	"os"
 	"strconv"
+
+	homedir "github.com/mitchellh/go-homedir"
 )
 
 func StartGame(g Graphics, i Input) error {
@@ -13,7 +18,7 @@ func StartGame(g Graphics, i Input) error {
 		g,
 	}
 	state.Out.Start()
-	ierr := InitDirs()
+	ierr := initAll()
 	if ierr != nil {
 		return ierr
 	}
@@ -52,6 +57,62 @@ func StartGame(g Graphics, i Input) error {
 		}
 	}
 	return nil
+}
+
+func initAll() error {
+	initFuncs := []func() error{
+		initDirs,
+		startLogging,
+		initRng,
+		initMonsters,
+		initItems,
+		initTiles,
+	}
+	for _, f := range initFuncs {
+		err := f()
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func initDirs() error {
+	if configdir != "" && datadir != "" {
+		return nil
+	}
+	configdir = os.Getenv("XDG_CONFIG_HOME")
+	datadir = os.Getenv("XDG_DATA_HOME")
+	if configdir == "" {
+		h, err := homedir.Dir()
+		if err != nil {
+			return err
+		}
+		configdir = h + string(os.PathSeparator) + ".config" + string(os.PathSeparator) + "gorl"
+	} else {
+		configdir += string(os.PathSeparator) + "gorl"
+	}
+	if datadir == "" {
+		h, err := homedir.Dir()
+		if err != nil {
+			return err
+		}
+		datadir = h + string(os.PathSeparator) + ".local" + string(os.PathSeparator) + "share" + string(os.PathSeparator) + "gorl"
+	} else {
+		datadir += string(os.PathSeparator) + "gorl"
+	}
+	err := os.MkdirAll(datadir, 0755)
+	if err != nil {
+		return err
+	}
+	err = os.MkdirAll(configdir, 0755)
+	return err
+}
+
+func startLogging() error {
+	out, err := os.Create("debug.log")
+	debug = log.New(out, "", log.Lshortfile)
+	return err
 }
 
 func doMainLoop(state *State, player *Critter, over *Overworld, stdun *StateDungeon) {
@@ -248,4 +309,19 @@ func dungeonclimbdown(state *State, player *Critter, over *Overworld, mydun *Sta
 		state.Out.Message("There are no stairs here!")
 	}
 	return false
+}
+
+func loadConfigFile(configfile string, v interface{}) error {
+	file, err := os.Open(configdir + string(os.PathSeparator) + configfile)
+	if err != nil {
+		// Attempt to load the file from the bindata
+		bytes, err := Asset("bindata/" + configfile)
+		if err != nil {
+			return err
+		}
+		return json.Unmarshal(bytes, v)
+	}
+	defer file.Close()
+	decoder := json.NewDecoder(file)
+	return decoder.Decode(v)
 }

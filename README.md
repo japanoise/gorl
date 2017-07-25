@@ -13,6 +13,13 @@ the language which I can use for this.
 The details of the setting, theme, etc. will be left for later. Right now, I'm
 focused on hacking together something worth playing.
 
+## Files
+
+Tile and monster definitons are loaded from monsters.go and tiles.go. If these
+are present in XDG_CONFIG_DIR, gorl will use them, otherwise it will use the
+embedded versions. These are generated from files in the bindata directory with
+the command `go-bindata -pkg gorl bindata`.
+
 ## Code structure
 
 The general idea is to separate the game logic from the graphics/input. gorl is

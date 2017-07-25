@@ -1,0 +1,52 @@
+{
+	"0": {
+		"Name": "the void",
+		"Passable": false,
+		"Transparent": false
+	},
+	"1": {
+		"Name": "solid wall",
+		"Passable": false,
+		"Transparent": false
+	},
+	"2": {
+		"Name": "stone floor",
+		"Passable": true,
+		"Transparent": true
+	},
+	"3": {
+		"Name": "grass",
+		"Passable": true,
+		"Transparent": true
+	},
+	"4": {
+		"Name": "grass",
+		"Passable": true,
+		"Transparent": true
+	},
+	"5": {
+		"Name": "stairs leading up",
+		"Passable": true,
+		"Transparent": true
+	},
+	"6": {
+		"Name": "stairs leading down",
+		"Passable": true,
+		"Transparent": true
+	},
+	"7": {
+		"Name": "seawater",
+		"Passable": false,
+		"Transparent": true
+	},
+	"8": {
+		"Name": "freshwater",
+		"Passable": false,
+		"Transparent": true
+	},
+	"9": {
+		"Name": "cave entrance",
+		"Passable": true,
+		"Transparent": true
+	}
+}

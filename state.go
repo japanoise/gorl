@@ -6,7 +6,6 @@ import (
 	"errors"
 	"log"
 	"math/rand"
-	"os"
 	"time"
 )
 
@@ -43,12 +42,11 @@ type DungeonItem struct {
 	It *Item
 }
 
-func init() {
-	out, _ := os.Create("debug.log")
-	debug = log.New(out, "", log.Lshortfile)
+func initRng() error {
 	seed := NewSeed()
 	rand.Seed(seed)
 	debug.Print(seed)
+	return nil
 }
 
 func DigDungeon(d int) *StateDungeon {
