@@ -57,7 +57,6 @@ const (
 	PlayerInventory
 	PlayerStats
 	Quit
-	Warp
 	DoSaveGame
 )
 

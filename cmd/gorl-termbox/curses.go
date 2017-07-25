@@ -159,8 +159,6 @@ func (c *Curses) GetAction() gorl.Control {
 			switch ev.Ch {
 			case 'q':
 				return gorl.Quit
-			case 'w':
-				return gorl.Warp
 			case '<':
 				return gorl.PlayerClimbUp
 			case '>':

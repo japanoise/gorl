@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"log"
 	"os"
-	"strconv"
 
 	homedir "github.com/mitchellh/go-homedir"
 )
@@ -150,13 +149,6 @@ func doMainLoop(state *State, player *Critter, over *Overworld, stdun *StateDung
 			} else {
 				pmoved = dungeonclimbdown(state, player, over, mydun)
 			}
-		case Warp:
-			x, err := strconv.Atoi(state.Out.GetString("x", false))
-			y, err2 := strconv.Atoi(state.Out.GetString("y", false))
-			if err != nil || err2 != nil {
-				continue
-			}
-			target = Move(state.CurLevel, player, x, y)
 		case PlayerDown:
 			target = Move(state.CurLevel, player, 0, +1)
 			pmoved = true
