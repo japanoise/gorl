@@ -171,6 +171,8 @@ func (c *Curses) GetAction() gorl.Control {
 				return gorl.DoSaveGame
 			case 'i':
 				return gorl.PlayerInventory
+			case 'z':
+				return gorl.PlayerZapSpell
 			default:
 				return gorl.DoNothing
 			}

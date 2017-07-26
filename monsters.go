@@ -29,7 +29,7 @@ func initMonsters() error {
 func GetMonster(race MonsterID, female bool) *Critter {
 	monst := Bestiary[race]
 	return &Critter{0, 0, race, "", GenStatBlock(monst.HitDice, monst.Level),
-		female, []*Item{}, 0, nil, nil, nil}
+		female, []*Item{}, 0, nil, nil, nil, 0, nil}
 }
 
 func RandomCritter(elevation int) *Critter {

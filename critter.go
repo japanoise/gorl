@@ -9,22 +9,26 @@ import (
 /* A creature! */
 
 type Critter struct {
-	X      int
-	Y      int
-	Race   MonsterID
-	Name   string
-	Stats  StatBlock
-	Female bool
-	Inv    []*Item
-	Gold   int
-	Weapon *Item
-	Armor  *Item
-	AI     *AiData
+	X         int
+	Y         int
+	Race      MonsterID
+	Name      string
+	Stats     StatBlock
+	Female    bool
+	Inv       []*Item
+	Gold      int
+	Weapon    *Item
+	Armor     *Item
+	AI        *AiData
+	Casting   SpellData
+	SpellBook []*Spell
 }
 
 type StatBlock struct {
 	MaxHp int
 	CurHp int
+	MaxMp int
+	CurMp int
 	Level uint8
 	Exp   int
 }
@@ -63,7 +67,7 @@ func GenStatBlock(hitdice uint8, level uint8) StatBlock {
 		hp += SmallDiceRoll(hitdice)
 	}
 	return StatBlock{
-		hp, hp, 0, 0,
+		hp, hp, 0, 0, level, 0,
 	}
 }
 
@@ -142,6 +146,18 @@ func (c *Critter) SnarfItems(items []*Item) {
 	}
 }
 
+func (c *Critter) CanCast(s *Spell) bool {
+	ret := true
+	if SpellDataHasFlag(s.Data, SpellRitual) {
+		ret = ret && SpellDataHasFlag(c.Casting, SpellRitual)
+	} else if SpellDataHasFlag(s.Data, SpellSorcery) {
+		ret = ret && SpellDataHasFlag(c.Casting, SpellSorcery)
+	} else if SpellDataHasFlag(s.Data, SpellHoly) {
+		ret = ret && SpellDataHasFlag(c.Casting, SpellHoly)
+	}
+	return ret
+}
+
 func (c *Critter) CompleteDescription(g Graphics) {
 	wield := "Wielding nothing."
 	if c.Weapon != nil {
@@ -163,5 +179,22 @@ func GetMaleFemaleStr(female bool) string {
 		return "female"
 	} else {
 		return "male"
+	}
+}
+
+func (c *Critter) Kill(state *State) {
+	state.Out.Message("You have defeated " + c.GetTheName())
+	c.Delete(state.CurLevel)
+	for i, crit := range state.Monsters {
+		if crit == c {
+			state.Monsters[i] = nil
+		}
+	}
+}
+
+func (c *Critter) RestoreHp(hp int) {
+	c.Stats.CurHp += hp
+	if c.Stats.CurHp > c.Stats.MaxHp {
+		c.Stats.CurHp = c.Stats.MaxHp
 	}
 }

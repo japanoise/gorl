@@ -56,6 +56,7 @@ const (
 	PlayerLook
 	PlayerInventory
 	PlayerStats
+	PlayerZapSpell
 	Quit
 	DoSaveGame
 )

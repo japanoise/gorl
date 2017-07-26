@@ -66,6 +66,7 @@ func initAll() error {
 		initMonsters,
 		initItems,
 		initTiles,
+		initSpells,
 	}
 	for _, f := range initFuncs {
 		err := f()
@@ -158,6 +159,15 @@ func doMainLoop(state *State, player *Critter, over *Overworld, stdun *StateDung
 		case PlayerLeft:
 			target = Move(state.CurLevel, player, -1, 0)
 			pmoved = true
+		case PlayerZapSpell:
+			c := ZapSpell(state, player, state.CurLevel)
+			for _, crit := range c {
+				if crit == player {
+					state.Out.Message("The spell hits you!")
+				} else if crit.IsDead() {
+					crit.Kill(state)
+				}
+			}
 		case PlayerRight:
 			target = Move(state.CurLevel, player, +1, 0)
 			pmoved = true
@@ -184,13 +194,7 @@ func doMainLoop(state *State, player *Critter, over *Overworld, stdun *StateDung
 		if target != nil {
 			delete := Attack(true, true, state.CurLevel, state.Out, player, target)
 			if delete {
-				state.Out.Message("You have defeated " + target.GetTheName())
-				target.Delete(state.CurLevel)
-				for i, crit := range state.Monsters {
-					if crit == target {
-						state.Monsters[i] = nil
-					}
-				}
+				target.Kill(state)
 			}
 		}
 
