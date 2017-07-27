@@ -12,10 +12,26 @@
 ****** Perhaps there are special dungeons for this, with mixed-size corridoors.
 ** Overworld scales would be bigger, maybe each tile is a kilometre or half a kilometre squared?
 *** Or - fitting with existing dungeon size - 150m². Since a dungeon is 100x100
+**** This would make each 6 tiles 9km long
+**** We could use a large scale - 100 * 150 = 15000 m = 15km
+***** This scale would be the meta-overworld
+***** each meta-ow tile would be 100*100 ow tiles
+**** For scale, the distance between Paris and London is 460km - 30 meta-ow tiles
+**** How about a Great Britain sized map?
+***** Land's End → John o' Groats is ~1500 km - 100 mow tiles
+***** West-Coast wales → Ipswich is ~440 km - 29 mow tiles
+***** This would give 2900 mow tiles - probably not a huge amount to store…
+****** …especially not if we use seeds to generate overworld tile details OwO
+***** At this scale, London (~1500km², ~38km on each side if we count as a square) would be 2 tiles wide and tall
+****** So a "city" would be one mow tile, and a "metropolis" would be four mow tiles
+******* Perhaps a town takes up multiple overworld tiles, and a village takes up one or two
 * Time scales
-** As above, one second per turn.
-** On the overworld, the tiles are 100 times bigger, so it would be 100 seconds - roughly a minute and a half.
+** As above, one second per turn. (1000 ms)
+** On the overworld, the tiles are 100 times bigger, so it would be 100 seconds (100,000 ms) - roughly a minute and a half.
+*** On the meta-overworld, it would be 10000 seconds (10,000,000 ms) - two hours, 46 minutes.
 ** Time should be stored on the milisecond-day-month-year scale, and clocked over at some high value each day.
+*** 86,400,000 miliseconds = one day
+**** big number, but it will fit in an int32
 *** So we can have 12th of November 1234, 12345ms. Easy to convert to Terran hours and minutes.
 *** This allows the player or monsters to be slowed by a factor of 1000! Unlikely to happen, but it's good to keep the option available.
 **** Or, maybe have ultra-slow monsters…
