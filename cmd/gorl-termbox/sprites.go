@@ -33,5 +33,6 @@ func getSprites() map[gorl.Sprite]*CursesSprite {
 	ret[gorl.SpriteItemGold] = &CursesSprite{'$', termbox.ColorYellow, termbox.ColorDefault}
 	ret[gorl.SpriteItemWeaponGeneric] = &CursesSprite{')', termbox.ColorYellow, termbox.ColorDefault}
 	ret[gorl.SpriteItemAppGeneric] = &CursesSprite{'[', termbox.ColorCyan, termbox.ColorDefault}
+	ret[gorl.SpriteItemPotion] = &CursesSprite{'!', termbox.ColorCyan, termbox.ColorDefault}
 	return ret
 }

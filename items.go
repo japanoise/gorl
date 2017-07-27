@@ -35,6 +35,7 @@ const (
 	ItemClassCurrency ItemClassID = iota
 	ItemClassWeapon
 	ItemClassApp
+	ItemClassPotion
 )
 
 var ItemClassDir map[ItemClassID]*ItemClass
@@ -44,6 +45,7 @@ func initItems() error {
 	ItemClassDir[ItemClassCurrency] = &ItemClass{SpriteItemGold, "currency"}
 	ItemClassDir[ItemClassWeapon] = &ItemClass{SpriteItemWeaponGeneric, "weapon"}
 	ItemClassDir[ItemClassApp] = &ItemClass{SpriteItemAppGeneric, "apparel"}
+	ItemClassDir[ItemClassPotion] = &ItemClass{SpriteItemPotion, "potion"}
 	return nil
 }
 
@@ -127,7 +129,8 @@ func ShowItemList(g Graphics, gold int, items []*Item) *Item {
 	}
 }
 
-func UseItem(g Graphics, player *Critter, item *Item) {
+func UseItem(state *State, player *Critter, item *Item) {
+	g := state.Out
 	if item == nil {
 		return
 	}
@@ -146,6 +149,9 @@ func UseItem(g Graphics, player *Critter, item *Item) {
 		}
 		g.Message("You ready " + item.DescribeExtra())
 		player.Weapon = item
+	} else if item.Class == ItemClassPotion {
+		g.Message("You quaff " + item.Name)
+		DoCastSpell(state, player, state.CurLevel, item.Magic)
 	} else {
 		g.Message("There doesn't seem to be much use for that item.")
 		return

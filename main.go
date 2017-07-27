@@ -174,7 +174,7 @@ func doMainLoop(state *State, player *Critter, over *Overworld, stdun *StateDung
 		case PlayerLook:
 			Look(state.CurLevel, state.Out, state.In, player)
 		case PlayerInventory:
-			UseItem(state.Out, player, ShowItemList(state.Out, player.Gold, player.Inv))
+			UseItem(state, player, ShowItemList(state.Out, player.Gold, player.Inv))
 		case PlayerStats:
 			player.CompleteDescription(state.Out)
 		case DoSaveGame:

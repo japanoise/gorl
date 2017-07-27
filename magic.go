@@ -1,5 +1,7 @@
 package gorl
 
+import "strings"
+
 type SpellEffect uint8
 
 const (
@@ -183,7 +185,11 @@ func DoCastSpell(state *State, player *Critter, m *Map, s *Spell) []*Critter {
 		d := state.In.GetDirection("Fire " + s.Name + " in which direction?")
 		p = getEndPoint(m, player, d)
 	}
-	state.Out.Message("You cast " + s.Name + "!")
+	if strings.Contains(s.Name, "You") {
+		state.Out.Message(s.Name)
+	} else {
+		state.Out.Message("You cast " + s.Name + "!")
+	}
 	return fn(state.Out, s, player, m, p)
 }
 

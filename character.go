@@ -28,5 +28,13 @@ func CharGen(g Graphics) *Critter {
 		&Spell{"Healing Ray", SpellHeal, SmallDice(1, 3), SpellOther | SpellHoly},
 		&Spell{"Healing Burst", SpellHeal, SmallDice(4, 3), SpellArea | SpellHoly},
 	}
+	player.Inv = []*Item{
+		NewItemOfClass("potion of healing", ItemClassPotion),
+	}
+	player.Inv[0].Magic = &Spell{}
+	player.Inv[0].Magic.Effect = SpellHeal
+	player.Inv[0].Magic.Potency = SmallDice(2, 6)
+	player.Inv[0].Magic.Data = SpellSelf
+	player.Inv[0].Magic.Name = "You feel a little better."
 	return player
 }
