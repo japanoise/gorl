@@ -2,6 +2,7 @@ package gorl
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"os"
 
@@ -127,13 +128,15 @@ func doMainLoop(state *State, player *Critter, over *Overworld, stdun *StateDung
 	pdjmap := BlankDMap(state.CurLevel)
 	pdjmap.Calc(player)
 	for playing {
+		// Recalculate the status bar
+		status := CalcStatus(state, player)
 		// Draw the level
 		if state.Dungeon > 0 {
 			CalcVisibility(state.CurLevel, player, 20) //Eventually, this will be torch level.
-			state.Out.Dungeon(state.CurLevel, player.X, player.Y)
+			state.Out.Dungeon(state.CurLevel, player.X, player.Y, status)
 		} else {
 			CalcVisibility(state.CurLevel, player, 40)
-			state.Out.Overworld(over.M, player.X, player.Y)
+			state.Out.Overworld(over.M, player.X, player.Y, status)
 		}
 		var target *Critter
 		act := state.In.GetAction() // Poll for an action
@@ -228,6 +231,12 @@ func doMainLoop(state *State, player *Critter, over *Overworld, stdun *StateDung
 			playing = false
 		}
 	}
+}
+
+func CalcStatus(state *State, player *Critter) string {
+	return fmt.Sprintf("[%d/%d hp] [%d/%d mp] %s, level %d, on level %d",
+		player.Stats.CurHp, player.Stats.MaxHp, player.Stats.CurMp, player.Stats.MaxMp,
+		player.GetName(), player.Stats.Level, state.Dungeon)
 }
 
 func dungeonclimbup(state *State, player *Critter, over *Overworld, mydun *StateDungeon) bool {

@@ -89,14 +89,25 @@ func (c *Curses) drawMapViewport(m *gorl.Map, x, y int) {
 	termbox.Flush()
 }
 
-func (c *Curses) Dungeon(dun *gorl.Map, x, y int) {
+func (c *Curses) Dungeon(dun *gorl.Map, x, y int, status string) {
 	c.drawMapViewport(dun, x, y)
 	c.flushMessages()
+	PrintStatus(status)
 }
 
-func (c *Curses) Overworld(overworld *gorl.Map, x, y int) {
+func PrintStatus(status string) {
+	sx, sy := termbox.Size()
+	for i := 0; i <= sx; i++ {
+		termbox.SetCell(i, sy-1, ' ', termbox.AttrReverse, termbox.ColorDefault)
+	}
+	termutil.PrintstringColored(termbox.AttrReverse, status, 0, sy-1)
+	termbox.Flush()
+}
+
+func (c *Curses) Overworld(overworld *gorl.Map, x, y int, status string) {
 	c.drawMapViewport(overworld, x, y)
 	c.flushMessages()
+	PrintStatus(status)
 }
 
 func clearLine(y, width int) {

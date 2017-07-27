@@ -178,9 +178,9 @@ func DoCastSpell(state *State, player *Critter, m *Map, s *Spell) []*Critter {
 	}
 	if SpellDataHasFlag(s.Data, SpellArea|SpellOther) {
 		if state.Dungeon < 0 {
-			state.Out.Dungeon(state.CurLevel, player.X, player.Y)
+			state.Out.Dungeon(state.CurLevel, player.X, player.Y, "Casting spell...")
 		} else {
-			state.Out.Overworld(state.CurLevel, player.X, player.Y)
+			state.Out.Overworld(state.CurLevel, player.X, player.Y, "Casting spell...")
 		}
 		d := state.In.GetDirection("Fire " + s.Name + " in which direction?")
 		p = getEndPoint(m, player, d)

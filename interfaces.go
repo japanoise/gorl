@@ -24,17 +24,17 @@ func GetQuip() string {
 
 /* Interface for graphics frontend */
 type Graphics interface {
-	Start() error                                  /* Init the frontend */
-	End()                                          /* Close the frontend */
-	Dungeon(dun *Map, x, y int)                    /* Draw a dungeon level (may be a viewport) */
-	Overworld(overworld *Map, x, y int)            /* Draw the overworld (ditto) */
-	Message(msg string)                            /* Show a message; block and return when user ack's it */
-	LongMessage(msgs ...string)                    /* Multiline message */
-	Menu(prompt string, choices []string) string   /* Show a selection menu*/
-	MenuIndex(prompt string, choices []string) int /* Show a selection menu, return the index*/
-	MainMenu(choices []string) int                 /* Show a selection menu, return the index. Implementor is requested to make it fancy. */
-	GetString(prompt string, empty bool) string    /* Get a free string */
-	DeathScreen(player *Critter)                   /* Called when the player dies. Extra points for a tombstone. */
+	Start() error                                      /* Init the frontend */
+	End()                                              /* Close the frontend */
+	Dungeon(dun *Map, x, y int, status string)         /* Draw a dungeon level (may be a viewport) */
+	Overworld(overworld *Map, x, y int, status string) /* Draw the overworld (ditto) */
+	Message(msg string)                                /* Show a message; block and return when user ack's it */
+	LongMessage(msgs ...string)                        /* Multiline message */
+	Menu(prompt string, choices []string) string       /* Show a selection menu*/
+	MenuIndex(prompt string, choices []string) int     /* Show a selection menu, return the index*/
+	MainMenu(choices []string) int                     /* Show a selection menu, return the index. Implementor is requested to make it fancy. */
+	GetString(prompt string, empty bool) string        /* Get a free string */
+	DeathScreen(player *Critter)                       /* Called when the player dies. Extra points for a tombstone. */
 }
 
 /* Input interface */
