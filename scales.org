@@ -1,0 +1,27 @@
+* Speeds
+** Human walking speed is ~1.5m/s
+** Running speed (given figures are world records, so it would be a bit below)
+*** https://en.wikipedia.org/wiki/Running#Limits_of_speed
+*** Flat-out sprint ~10m/s - So we might say 6*walk = 9m/s
+*** Longer distances ~5m/s - 3*walk = 5m/s
+* Distance scales
+** Due to walking speed, dungeon cells could be 1.5m², to allow a nice easy one-second-per-turn default
+*** This scale is probably enough to walk through (so corridoors make sense) but still nice and narrow.
+**** Maybe very large monsters (e.g. dragons) can't fit through such narrow spaces?
+***** In that case, how the hell did they get so deep into a dungeon?!
+****** Perhaps there are special dungeons for this, with mixed-size corridoors.
+** Overworld scales would be bigger, maybe each tile is a kilometre or half a kilometre squared?
+*** Or - fitting with existing dungeon size - 150m². Since a dungeon is 100x100
+* Time scales
+** As above, one second per turn.
+** On the overworld, the tiles are 100 times bigger, so it would be 100 seconds - roughly a minute and a half.
+** Time should be stored on the milisecond-day-month-year scale, and clocked over at some high value each day.
+*** So we can have 12th of November 1234, 12345ms. Easy to convert to Terran hours and minutes.
+*** This allows the player or monsters to be slowed by a factor of 1000! Unlikely to happen, but it's good to keep the option available.
+**** Or, maybe have ultra-slow monsters…
+** Humans should eat every day
+*** You'll feel hungry after four hours of activity
+*** When you go to sleep, you will be either hungry in the morning, or starving if you are hungry already.
+*** Hungry is just a warning; starvation incurs stat penalties.
+**** Ascetics get stat boosts during hunger and starvation
+*** If you're starving for a week, you die. (since you're very active)
