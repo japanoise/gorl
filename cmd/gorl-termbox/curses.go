@@ -150,47 +150,10 @@ func (c *Curses) Menu(prompt string, choices []string) string {
 
 func (c *Curses) GetAction() gorl.Control {
 	ev := termbox.PollEvent()
-	if ev.Type == termbox.EventKey {
-		if ev.Ch == 0 {
-			switch ev.Key {
-			case termbox.KeyCtrlC:
-				return gorl.Quit
-			case termbox.KeyArrowUp:
-				return gorl.PlayerUp
-			case termbox.KeyArrowDown:
-				return gorl.PlayerDown
-			case termbox.KeyArrowLeft:
-				return gorl.PlayerLeft
-			case termbox.KeyArrowRight:
-				return gorl.PlayerRight
-			default:
-				return gorl.DoNothing
-			}
-		} else {
-			switch ev.Ch {
-			case 'q':
-				return gorl.Quit
-			case '<':
-				return gorl.PlayerClimbUp
-			case '>':
-				return gorl.PlayerClimbDown
-			case ':':
-				return gorl.PlayerLook
-			case 's':
-				return gorl.PlayerStats
-			case 'S':
-				return gorl.DoSaveGame
-			case 'i':
-				return gorl.PlayerInventory
-			case 'z':
-				return gorl.PlayerZapSpell
-			default:
-				return gorl.DoNothing
-			}
-		}
-	} else {
-		return gorl.DoNothing
+	for ev.Type != termbox.EventKey {
+		ev = termbox.PollEvent()
 	}
+	return gorl.GetBinding(termutil.ParseTermboxEvent(ev))
 }
 
 func (c *Curses) Message(str string) {

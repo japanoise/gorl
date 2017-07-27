@@ -43,24 +43,6 @@ type Input interface {
 	GetDirection(prompt string) Direction /* Get a direction to do some action */
 }
 
-type Control uint8
-
-const (
-	DoNothing Control = iota
-	PlayerUp
-	PlayerDown
-	PlayerLeft
-	PlayerRight
-	PlayerClimbDown
-	PlayerClimbUp
-	PlayerLook
-	PlayerInventory
-	PlayerStats
-	PlayerZapSpell
-	Quit
-	DoSaveGame
-)
-
 type Direction uint8
 
 const (

@@ -68,6 +68,7 @@ func initAll() error {
 		initItems,
 		initTiles,
 		initSpells,
+		initBindings,
 	}
 	for _, f := range initFuncs {
 		err := f()
@@ -141,6 +142,9 @@ func doMainLoop(state *State, player *Critter, over *Overworld, stdun *StateDung
 		var target *Critter
 		act := state.In.GetAction() // Poll for an action
 		switch act {                // Act on the action
+		case ControlInvalid:
+			state.Out.Message("Key unbound.")
+			continue
 		case PlayerClimbUp:
 			if state.Dungeon <= 0 {
 				state.Out.Message("There are no stairs to climb up here!")
