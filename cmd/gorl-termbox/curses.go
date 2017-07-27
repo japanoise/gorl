@@ -6,7 +6,9 @@ package main
 */
 
 import (
+	"fmt"
 	"strings"
+	"time"
 
 	"github.com/japanoise/gorl"
 	"github.com/japanoise/termbox-util"
@@ -48,6 +50,7 @@ func Draw(x, y int, spr *CursesSprite) {
 
 func (c *Curses) Start() error {
 	err := termbox.Init()
+	termbox.SetInputMode(termbox.InputAlt)
 	return err
 }
 
@@ -288,11 +291,72 @@ func (c *Curses) MainMenu(choices []string) int {
 	}
 }
 
-func (c *Curses) DeathScreen(player *gorl.Critter) {
+func (c *Curses) DeathScreen(player *gorl.Critter, killer string) {
 	c.flushMessages()
 	termbox.PollEvent()
-	termbox.Clear(termbox.ColorDefault, termbox.ColorDefault)
-	termutil.Printstring("Rest in peace "+player.Name, 0, 0)
-	termbox.Flush()
-	termbox.PollEvent()
+	looping := true
+	for looping {
+		termbox.Clear(termbox.ColorDefault, termbox.ColorDefault)
+		sx, sy := termbox.Size()
+		nl := termutil.RunewidthStr(player.Name)
+		kl := termutil.RunewidthStr(killer)
+		gs := fmt.Sprintf("%d AU", player.Gold)
+		gl := termutil.RunewidthStr(gs)
+		tsh := 14
+		tsw := 10
+		if nl > tsw {
+			tsw = nl
+			if tsw%2 != 0 {
+				tsw++
+			}
+		}
+		if kl > tsw {
+			tsw = kl
+			if tsw%2 != 0 {
+				tsw++
+			}
+		}
+		if gl > tsw {
+			tsw = gl
+			if tsw%2 != 0 {
+				tsw++
+			}
+		}
+		anc := (sx - (tsw + 8)) / 2
+		yanc := (sy - tsh) / 2
+		for i := 0; i < tsw-2; i++ {
+			termutil.PrintRune(anc+5+i, yanc+0, '_', termbox.ColorDefault)
+		}
+		termutil.Printstring("/", anc+4, yanc+1)
+		termutil.Printstring("\\", anc+3+tsw, yanc+1)
+		termutil.Printstring("/", anc+3, yanc+2)
+		termutil.Printstring("REST", anc+4+((tsw-4)/2), yanc+2)
+		termutil.Printstring("\\", anc+4+tsw, yanc+2)
+		termutil.Printstring("/", anc+2, yanc+3)
+		termutil.Printstring("IN", anc+4+((tsw-2)/2), yanc+3)
+		termutil.Printstring("\\", anc+5+tsw, yanc+3)
+		termutil.Printstring("/", anc+1, yanc+4)
+		termutil.Printstring("PEACE!", anc+4+((tsw-6)/2), yanc+4)
+		termutil.Printstring("\\", anc+6+tsw, yanc+4)
+		for i := 5; i < tsh; i++ {
+			termutil.Printstring("|", anc+7+tsw, yanc+i)
+			termutil.Printstring("|", anc, yanc+i)
+		}
+		termutil.Printstring(player.Name, anc+4+((tsw-nl)/2), yanc+6)
+		termutil.Printstring(gs, anc+4+((tsw-gl)/2), yanc+7)
+		termutil.Printstring("killed by", anc+4+((tsw-10)/2), yanc+8)
+		termutil.Printstring(killer, anc+4+((tsw-kl)/2), yanc+9)
+		termutil.Printstring(time.Now().Format("06-01-02"), anc+4+((tsw-8)/2), yanc+11)
+		for i := 0; i < anc; i++ {
+			termutil.Printstring("_", i, yanc+13)
+		}
+		for i := anc + 1; i < anc+tsw+7; i++ {
+			termutil.Printstring("_", i, yanc+13)
+		}
+		for i := anc + 8 + tsw; i <= sx; i++ {
+			termutil.Printstring("_", i, yanc+13)
+		}
+		termbox.Flush()
+		looping = termbox.PollEvent().Type != termbox.EventKey
+	}
 }

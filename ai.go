@@ -25,8 +25,9 @@ func (p *Point) GetXY() (int, int) {
 	return p.X, p.Y
 }
 
-func AiOneTurn(state *State, player *Critter, pdjmap *DijkstraMap) bool {
+func AiOneTurn(state *State, player *Critter, pdjmap *DijkstraMap) (bool, *Critter) {
 	dead := false
+	var killer *Critter = nil
 	for _, monster := range state.Monsters {
 		if monster == nil {
 			continue
@@ -36,12 +37,15 @@ func AiOneTurn(state *State, player *Critter, pdjmap *DijkstraMap) bool {
 		}
 		if monster.AI.Active {
 			target := monster.Chase(state.CurLevel, pdjmap)
-			if target == player {
+			if target == player && !dead {
 				dead = dead || Attack(true, false, state.CurLevel, state.Out, monster, player)
+				if dead {
+					killer = monster
+				}
 			}
 		}
 	}
-	return dead
+	return dead, killer
 }
 
 func CoordsToFloat(x, y int) (float64, float64) {

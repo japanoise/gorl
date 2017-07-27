@@ -228,10 +228,10 @@ func doMainLoop(state *State, player *Critter, over *Overworld, stdun *StateDung
 		}
 
 		// Make the monsters act
-		playerdead := AiOneTurn(state, player, pdjmap)
+		playerdead, killer := AiOneTurn(state, player, pdjmap)
 		if playerdead {
 			state.Out.Message("You died!")
-			state.Out.DeathScreen(player)
+			state.Out.DeathScreen(player, killer.GetName())
 			playing = false
 		}
 	}
