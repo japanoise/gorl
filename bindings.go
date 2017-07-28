@@ -1,22 +1,22 @@
 package gorl
 
-type Control uint8
+type Control string
 
 const (
-	ControlInvalid Control = iota
-	DoNothing
-	PlayerUp
-	PlayerDown
-	PlayerLeft
-	PlayerRight
-	PlayerClimbDown
-	PlayerClimbUp
-	PlayerLook
-	PlayerInventory
-	PlayerStats
-	PlayerZapSpell
-	Quit
-	DoSaveGame
+	ControlInvalid  Control = ""
+	DoNothing               = "Do nothing"
+	PlayerUp                = "Move up"
+	PlayerDown              = "Move down"
+	PlayerLeft              = "Move left"
+	PlayerRight             = "Move right"
+	PlayerClimbDown         = "Climb down"
+	PlayerClimbUp           = "Climb up"
+	PlayerLook              = "Look"
+	PlayerInventory         = "Inventory"
+	PlayerStats             = "Stats"
+	PlayerZapSpell          = "Zap Spell"
+	Quit                    = "Quit"
+	DoSaveGame              = "Save"
 )
 
 var bindings map[string]Control
