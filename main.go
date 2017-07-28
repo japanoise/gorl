@@ -171,6 +171,11 @@ func doMainLoop(state *State, player *Critter, over *Overworld, stdun *StateDung
 			for _, crit := range c {
 				if crit == player {
 					state.Out.Message("The spell hits you!")
+					if player.IsDead() {
+						state.Out.Message("You died!")
+						state.Out.DeathScreen(player, "their own magic")
+						return
+					}
 				} else if crit.IsDead() {
 					crit.Kill(state)
 				}
