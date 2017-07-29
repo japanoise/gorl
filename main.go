@@ -172,6 +172,21 @@ func doMainLoop(state *State, player *Critter, over *Overworld, stdun *StateDung
 		case PlayerLeft:
 			target = Move(state.CurLevel, player, -1, 0)
 			pmoved = true
+		case PlayerRight:
+			target = Move(state.CurLevel, player, +1, 0)
+			pmoved = true
+		case PlayerNE:
+			target = Move(state.CurLevel, player, 1, -1)
+			pmoved = true
+		case PlayerNW:
+			target = Move(state.CurLevel, player, -1, -1)
+			pmoved = true
+		case PlayerSE:
+			target = Move(state.CurLevel, player, 1, 1)
+			pmoved = true
+		case PlayerSW:
+			target = Move(state.CurLevel, player, -1, 1)
+			pmoved = true
 		case PlayerZapSpell:
 			c := ZapSpell(state, player, state.CurLevel)
 			for _, crit := range c {
@@ -186,9 +201,6 @@ func doMainLoop(state *State, player *Critter, over *Overworld, stdun *StateDung
 					crit.Kill(state)
 				}
 			}
-		case PlayerRight:
-			target = Move(state.CurLevel, player, +1, 0)
-			pmoved = true
 		case PlayerLook:
 			Look(state.CurLevel, state.Out, state.In, player)
 		case PlayerInventory:

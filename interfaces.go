@@ -56,4 +56,6 @@ const (
 	DirNW
 	DirSW
 	DirUp
+	DirDown
+	DirSelf
 )

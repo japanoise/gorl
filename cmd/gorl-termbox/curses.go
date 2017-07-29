@@ -208,25 +208,41 @@ func (c *Curses) LongMessage(msgs ...string) {
 func (c *Curses) GetDirection(prompt string) gorl.Direction {
 	drawString(0, 0, prompt)
 	termbox.Flush()
-	ev := termbox.PollEvent()
-	for ev.Type != termbox.EventKey {
-		ev = termbox.PollEvent()
-	}
-	if ev.Ch == 0 {
-		switch ev.Key {
-		case termbox.KeyArrowUp:
-			return gorl.DirNorth
-		case termbox.KeyArrowDown:
-			return gorl.DirSouth
-		case termbox.KeyArrowLeft:
-			return gorl.DirWest
-		case termbox.KeyArrowRight:
-			return gorl.DirEast
-		default:
-			return gorl.DirUp
+	for {
+		ev := termbox.PollEvent()
+		for ev.Type != termbox.EventKey {
+			ev = termbox.PollEvent()
 		}
+		binding := gorl.GetBinding(termutil.ParseTermboxEvent(ev))
+		switch binding {
+		case gorl.PlayerUp:
+			return gorl.DirNorth
+		case gorl.PlayerDown:
+			return gorl.DirSouth
+		case gorl.PlayerLeft:
+			return gorl.DirWest
+		case gorl.PlayerRight:
+			return gorl.DirEast
+		case gorl.PlayerNE:
+			return gorl.DirNE
+		case gorl.PlayerSE:
+			return gorl.DirSE
+		case gorl.PlayerNW:
+			return gorl.DirNW
+		case gorl.PlayerSW:
+			return gorl.DirSW
+		case gorl.PlayerClimbUp:
+			return gorl.DirUp
+		case gorl.PlayerClimbDown:
+			return gorl.DirDown
+		case gorl.DoNothing:
+			return gorl.DirSelf
+		}
+		sx, sy := termbox.Size()
+		clearLine(sy-2, sx)
+		drawString(0, sy-2, "Invalid direction "+termutil.ParseTermboxEvent(ev))
+		termbox.Flush()
 	}
-	return gorl.DirUp
 }
 
 func drawString(x, y int, str string) {
@@ -279,14 +295,17 @@ func (c *Curses) MainMenu(choices []string) int {
 				switch ev.Key {
 				case termbox.KeyEnter:
 					return sel
-				case termbox.KeyArrowDown:
-					if sel != len(choices)-1 {
-						sel++
-					}
-				case termbox.KeyArrowUp:
-					if sel != 0 {
-						sel--
-					}
+				}
+			}
+			binding := gorl.GetBinding(termutil.ParseTermboxEvent(ev))
+			switch binding {
+			case gorl.PlayerDown:
+				if sel != len(choices)-1 {
+					sel++
+				}
+			case gorl.PlayerUp:
+				if sel != 0 {
+					sel--
 				}
 			}
 		}
