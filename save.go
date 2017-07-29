@@ -3,6 +3,7 @@ package gorl
 import (
 	"compress/gzip"
 	"encoding/json"
+	"errors"
 	"io/ioutil"
 	"os"
 	"strconv"
@@ -58,6 +59,11 @@ func generateFileName(player *Critter, state *State, overworld *Overworld) strin
 func LoadGame(state *State) (*Critter, *State, *Overworld, error) {
 	var data Savedata
 	savefiles, err := ioutil.ReadDir(datadir)
+	if err != nil {
+		return nil, nil, nil, err
+	} else if len(savefiles) == 0 {
+		return nil, nil, nil, errors.New("No save files found")
+	}
 	fnchoice := make([]string, 0, len(savefiles))
 	for _, filedata := range savefiles {
 		if strings.HasSuffix(filedata.Name(), ".json.gz") && !filedata.IsDir() {

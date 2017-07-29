@@ -385,3 +385,38 @@ func (c *Curses) DeathScreen(player *gorl.Critter, killer string) {
 func (c *Curses) ShowMessageLog() {
 	termutil.DisplayScreenMessage(c.MessageLog...)
 }
+
+func (c *Curses) AckMessage(msg string) {
+	looping := true
+	mh := 7
+	sw := termutil.RunewidthStr(msg)
+	mw := sw + 8
+	if mw < 16 {
+		mw = 16
+	} else if mw%2 != 0 {
+		mw++
+	}
+	for looping {
+		termbox.Clear(termbox.ColorDefault, termbox.ColorDefault)
+		sx, sy := termbox.Size()
+		anc := (sx - (mw)) / 2
+		yanc := (sy - mh) / 2
+		for i := yanc; i < yanc+mh; i++ {
+			termutil.PrintRune(anc, i, '|', termbox.ColorDefault)
+			termutil.PrintRune(anc+mw, i, '|', termbox.ColorDefault)
+		}
+		for i := anc; i <= anc+mw; i++ {
+			termutil.PrintRune(i, yanc, ' ', termbox.AttrReverse)
+			termutil.PrintRune(i, yanc+mh, '-', termbox.ColorDefault)
+		}
+		termutil.PrintstringColored(termbox.AttrReverse|termbox.AttrBold, "[x]", anc, yanc)
+		termutil.PrintstringColored(termbox.AttrReverse|termbox.AttrBold, "Termbox Gorl", anc+((mw-12)/2), yanc)
+		termutil.Printstring(msg, anc+((mw-sw)/2), yanc+2)
+		termutil.Printstring("------", anc+((mw-6)/2), yanc+4)
+		termutil.Printstring("| OK |", anc+((mw-6)/2), yanc+5)
+		termutil.Printstring("------", anc+((mw-6)/2), yanc+6)
+		termbox.Flush()
+		ev := termbox.PollEvent()
+		looping = ev.Type != termbox.EventKey
+	}
+}

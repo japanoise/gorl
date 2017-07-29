@@ -41,7 +41,7 @@ func StartGame(g Graphics, i Input) error {
 		} else if menuitem == 1 {
 			player, newstate, over, err := LoadGame(state)
 			if err != nil {
-				state.Out.Message(err.Error())
+				state.Out.AckMessage(err.Error())
 				continue
 			} else {
 				state.CurLevel = newstate.CurLevel

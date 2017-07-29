@@ -28,7 +28,8 @@ type Graphics interface {
 	End()                                              /* Close the frontend */
 	Dungeon(dun *Map, x, y int, status string)         /* Draw a dungeon level (may be a viewport) */
 	Overworld(overworld *Map, x, y int, status string) /* Draw the overworld (ditto) */
-	Message(msg string)                                /* Show a message; block and return when user ack's it */
+	Message(msg string)                                /* Show a message */
+	AckMessage(msg string)                             /* Show a message; block and return when user ack's it */
 	LongMessage(msgs ...string)                        /* Multiline message */
 	Menu(prompt string, choices []string) string       /* Show a selection menu*/
 	MenuIndex(prompt string, choices []string) int     /* Show a selection menu, return the index*/
