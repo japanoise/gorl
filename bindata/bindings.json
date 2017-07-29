@@ -34,5 +34,7 @@
     "y": "North West",
     "u": "North East",
     "b": "South West",
-    "n": "South East"
+    "n": "South East",
+    "g": "Grab",
+    "d": "Drop"
 }

@@ -2,8 +2,10 @@ package gorl
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/japanoise/engutil"
+	"github.com/ulule/deepcopier"
 )
 
 type Item struct {
@@ -38,6 +40,10 @@ const (
 	ItemClassPotion
 	ItemClassFood
 )
+
+type InvItem struct {
+	Items []*Item
+}
 
 var ItemClassDir map[ItemClassID]*ItemClass
 
@@ -117,17 +123,18 @@ func (i *Item) DescribeExtra() string {
 	return ret
 }
 
-func ShowItemList(g Graphics, gold int, items []*Item) *Item {
+func ShowItemList(g Graphics, prompt string, items []*InvItem) (*Item, int) {
 	choices := make([]string, len(items)+1)
 	choices[0] = "<Cancel>"
 	for i := range items {
-		choices[i+1] = items[i].DescribeExtra()
+		choices[i+1] = strconv.Itoa(len(items[i].Items)) + "x " +
+			items[i].Items[0].DescribeExtra()
 	}
-	choice := g.MenuIndex(fmt.Sprintf("Inventory (%d gold)", gold), choices)
+	choice := g.MenuIndex(prompt, choices)
 	if choice == 0 {
-		return nil
+		return nil, -1
 	} else {
-		return items[choice-1]
+		return items[choice-1].Items[0], choice - 1
 	}
 }
 
@@ -164,22 +171,93 @@ func UseItem(state *State, player *Critter, item *Item) {
 	}
 	if store != nil {
 		for i, invitem := range player.Inv {
-			if invitem == item {
-				player.Inv[i] = store
+			if invitem.Items[0].SameAs(item) && len(invitem.Items) == 1 {
+				player.Inv[i] = NewInvItem(store, 1)
+				return
 			}
 		}
+		player.AddInventoryItem(store)
 	} else {
 		delindex := -1
 		for i, invitem := range player.Inv {
-			if invitem == item {
+			if invitem.Items[0].SameAs(item) {
 				delindex = i
 			}
 		}
 		if delindex == -1 {
 			return
 		}
-		player.Inv[delindex] = player.Inv[len(player.Inv)-1]
-		player.Inv[len(player.Inv)-1] = nil
-		player.Inv = player.Inv[:len(player.Inv)-1]
+		player.DeleteOneInvItem(delindex)
 	}
+}
+
+func (this *Item) SameAs(other *Item) bool {
+	if this.Name != other.Name {
+		return false
+	} else if this.DescribeExtra() != other.DescribeExtra() {
+		return false
+	}
+	return true
+}
+
+func Inventory(state *State, player *Critter) {
+	choice, _ := ShowItemList(state.Out, fmt.Sprintf("Inventory (%d gold)", player.Gold), player.Inv)
+	UseItem(state, player, choice)
+}
+
+func (c *Critter) AddInventoryItem(item *Item) {
+	for i, items := range c.Inv {
+		if items != nil && items.Items[0].SameAs(item) {
+			c.Inv[i].Items = append(c.Inv[i].Items, item)
+			return
+		}
+	}
+	c.Inv = append(c.Inv, NewInvItem(item, 1))
+}
+
+func NewInvItem(item *Item, quantity int) *InvItem {
+	ret := make([]*Item, quantity)
+	ret[0] = item
+	if quantity != 1 {
+		for i := 1; i < quantity; i++ {
+			p2 := &Item{}
+			deepcopier.Copy(item).To(p2)
+			ret[i] = p2
+		}
+	}
+	return &InvItem{ret}
+}
+
+func (c *Critter) DeleteOneInvItem(delindex int) {
+	if len(c.Inv[delindex].Items) == 1 {
+		c.Inv[delindex] = c.Inv[len(c.Inv)-1]
+		c.Inv[len(c.Inv)-1] = nil
+		c.Inv = c.Inv[:len(c.Inv)-1]
+	} else {
+		ii := c.Inv[delindex]
+		ii.Items[len(ii.Items)-1] = nil
+		c.Inv[delindex].Items = ii.Items[:len(ii.Items)-1]
+	}
+}
+
+func DropItem(state *State, player *Critter) {
+	choice, choiceindex := ShowItemList(state.Out, "Drop which item?", player.Inv)
+	if state.CurLevel.Tiles[player.X][player.Y].Items == nil {
+		state.CurLevel.Tiles[player.X][player.Y].Items = []*Item{choice}
+	} else {
+		state.CurLevel.Tiles[player.X][player.Y].Items =
+			append(state.CurLevel.Tiles[player.X][player.Y].Items, choice)
+	}
+	state.Out.Message("You drop " + choice.DescribeExtra())
+	player.DeleteOneInvItem(choiceindex)
+}
+
+func Grab(state *State, player *Critter) {
+	player.SnarfItems(state.CurLevel.Tiles[player.X][player.Y].Items)
+	msg := "You take "
+	for _, item := range state.CurLevel.Tiles[player.X][player.Y].Items {
+		msg += item.DescribeExtra() + ","
+	}
+	state.Out.Message(msg)
+	state.CurLevel.Tiles[player.X][player.Y].Items = []*Item{}
 }

@@ -23,6 +23,8 @@ const (
 	DoSaveGame              = "Save"
 	ExtCmd                  = "Extended command"
 	ViewMessages            = "Messages"
+	GetItems                = "Grab"
+	DropItems               = "Drop"
 )
 
 var bindings map[string]Control

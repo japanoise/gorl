@@ -204,7 +204,7 @@ func doMainLoop(state *State, player *Critter, over *Overworld, stdun *StateDung
 		case PlayerLook:
 			Look(state.CurLevel, state.Out, state.In, player)
 		case PlayerInventory:
-			UseItem(state, player, ShowItemList(state.Out, player.Gold, player.Inv))
+			Inventory(state, player)
 		case PlayerStats:
 			player.CompleteDescription(state.Out, GetHungerString(state.Player.Hunger))
 		case DoSaveGame:
@@ -220,6 +220,15 @@ func doMainLoop(state *State, player *Critter, over *Overworld, stdun *StateDung
 			playing = false
 		case ViewMessages:
 			state.Out.ShowMessageLog()
+		case GetItems:
+			// If the player is standing on any items, snarf them to the player's inventory
+			if state.CurLevel.Tiles[player.X][player.Y].Items != nil && len(state.CurLevel.Tiles[player.X][player.Y].Items) > 0 {
+				Grab(state, player)
+			} else {
+				state.Out.Message("You don't see anything here.")
+			}
+		case DropItems:
+			DropItem(state, player)
 		case DoNothing:
 		default:
 			state.Out.Message("Key unbound or unknown command.")
@@ -234,26 +243,28 @@ func doMainLoop(state *State, player *Critter, over *Overworld, stdun *StateDung
 			}
 		}
 
-		// If the player is standing on any items, snarf them to the player's inventory
-		if state.CurLevel != nil && state.CurLevel.Tiles[player.X][player.Y].Items != nil {
-			player.SnarfItems(state.CurLevel.Tiles[player.X][player.Y].Items)
-			msg := ""
-			showmsg := false
-			for _, item := range state.CurLevel.Tiles[player.X][player.Y].Items {
-				msg += item.DescribeExtra() + ","
-				showmsg = true
-			}
-			if showmsg {
-				state.Out.Message(msg)
-				state.CurLevel.Tiles[player.X][player.Y].Items = []*Item{}
-			}
-		}
-
-		// If the player's moved, recalculate the Dijkstra map
+		// If the player's moved, recalculate the Dijkstra map and tell her what's here/loot gold
 		if pmoved {
 			pdjmap = BlankDMap(state.CurLevel)
 			pdjmap.Calc(player)
 			pmoved = false
+			if state.CurLevel.Tiles[player.X][player.Y].Items != nil {
+				showmsg := false
+				loot := false
+				msg := ""
+				for _, item := range state.CurLevel.Tiles[player.X][player.Y].Items {
+					msg += item.DescribeExtra() + ","
+					showmsg = true
+					if item.Class == ItemClassCurrency {
+						loot = true
+					}
+				}
+				if loot {
+					Grab(state, player)
+				} else if showmsg {
+					state.Out.Message(msg)
+				}
+			}
 		}
 
 		// Make the monsters act

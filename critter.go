@@ -15,7 +15,7 @@ type Critter struct {
 	Name      string
 	Stats     StatBlock
 	Female    bool
-	Inv       []*Item
+	Inv       []*InvItem
 	Gold      int
 	Weapon    *Item
 	Armor     *Item
@@ -55,7 +55,9 @@ func (c *Critter) Delete(m *Map) {
 		m.Tiles[c.X][c.Y].Items = make([]*Item, 0, len(c.Inv))
 	}
 	if c.Inv != nil {
-		m.Tiles[c.X][c.Y].Items = append(m.Tiles[c.X][c.Y].Items, c.Inv...)
+		for _, items := range c.Inv {
+			m.Tiles[c.X][c.Y].Items = append(m.Tiles[c.X][c.Y].Items, items.Items...)
+		}
 	}
 	if c.Gold > 0 {
 		m.Tiles[c.X][c.Y].Items = append(m.Tiles[c.X][c.Y].Items, GetGoldCoins(c.Gold))
@@ -142,7 +144,7 @@ func (c *Critter) SnarfItems(items []*Item) {
 		if item.Class == ItemClassCurrency {
 			c.Gold += item.Value
 		} else {
-			c.Inv = append(c.Inv, item)
+			c.AddInventoryItem(item)
 		}
 	}
 }
