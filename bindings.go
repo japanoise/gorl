@@ -17,6 +17,8 @@ const (
 	PlayerZapSpell          = "Zap Spell"
 	Quit                    = "Quit"
 	DoSaveGame              = "Save"
+	ExtCmd                  = "Extended command"
+	ViewMessages            = "Messages"
 )
 
 var bindings map[string]Control

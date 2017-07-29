@@ -17,4 +17,5 @@ const (
 	SpriteItemWeaponGeneric
 	SpriteItemAppGeneric
 	SpriteItemPotion
+	SpriteItemFoodGeneric
 )

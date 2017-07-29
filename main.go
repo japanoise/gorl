@@ -16,6 +16,11 @@ func StartGame(g Graphics, i Input) error {
 		0,
 		i,
 		g,
+		25200000, // 7 am
+		12,       // on the 12 of
+		5,        // May
+		1432,     // 1432
+		&PlayerData{},
 	}
 	state.Out.Start()
 	ierr := initAll()
@@ -69,6 +74,7 @@ func initAll() error {
 		initTiles,
 		initSpells,
 		initBindings,
+		initHunger,
 	}
 	for _, f := range initFuncs {
 		err := f()
@@ -141,10 +147,10 @@ func doMainLoop(state *State, player *Critter, over *Overworld, stdun *StateDung
 		}
 		var target *Critter
 		act := state.In.GetAction() // Poll for an action
-		switch act {                // Act on the action
-		case ControlInvalid:
-			state.Out.Message("Key unbound.")
-			continue
+		for act == ExtCmd {
+			act = Control(state.Out.GetString("Command", true))
+		}
+		switch act { // Act on the action
 		case PlayerClimbUp:
 			if state.Dungeon <= 0 {
 				state.Out.Message("There are no stairs to climb up here!")
@@ -188,7 +194,7 @@ func doMainLoop(state *State, player *Critter, over *Overworld, stdun *StateDung
 		case PlayerInventory:
 			UseItem(state, player, ShowItemList(state.Out, player.Gold, player.Inv))
 		case PlayerStats:
-			player.CompleteDescription(state.Out)
+			player.CompleteDescription(state.Out, GetHungerString(state.Player.Hunger))
 		case DoSaveGame:
 			over.SavedPx = player.X
 			over.SavedPy = player.Y
@@ -200,6 +206,12 @@ func doMainLoop(state *State, player *Critter, over *Overworld, stdun *StateDung
 			}
 		case Quit:
 			playing = false
+		case ViewMessages:
+			state.Out.ShowMessageLog()
+		case DoNothing:
+		default:
+			state.Out.Message("Key unbound or unknown command.")
+			continue
 		}
 
 		// End of actions, now act on the consequences
@@ -236,7 +248,7 @@ func doMainLoop(state *State, player *Critter, over *Overworld, stdun *StateDung
 		playerdead, killer := AiOneTurn(state, player, pdjmap)
 		if playerdead {
 			state.Out.Message("You died!")
-			state.Out.DeathScreen(player, killer.GetName())
+			state.Out.DeathScreen(player, killer)
 			playing = false
 		}
 	}

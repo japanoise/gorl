@@ -8,6 +8,44 @@ var playableRaces []MonsterID = []MonsterID{
 	MonsterInfernal,
 }
 
+type HungerState uint8
+
+const (
+	HungerNormal HungerState = iota
+	HungerHungry
+	HungerStarving
+	HungerDying
+	HungerDead
+)
+
+type PlayerData struct {
+	TimeSinceEaten uint32
+	Hunger         HungerState
+}
+
+const (
+	TimeStarvation uint32 = 6.048e+8 // one week
+	TimeDying             = 5.184e+8 // 6 days
+	TimeStarving          = 2.592e+8 // 3 days
+	TimeHungry            = 1.44e+7  // 4 hours
+)
+
+var hungerStrings map[HungerState]string
+
+func initHunger() error {
+	hungerStrings = make(map[HungerState]string)
+	hungerStrings[HungerNormal] = "Not hungry."
+	hungerStrings[HungerHungry] = "Hungry."
+	hungerStrings[HungerStarving] = "Starving."
+	hungerStrings[HungerDying] = "Dying of starvation."
+	hungerStrings[HungerDead] = "Dead from starvation."
+	return nil
+}
+
+func GetHungerString(h HungerState) string {
+	return hungerStrings[h]
+}
+
 func CharGen(g Graphics) *Critter {
 	choices := make([]string, len(playableRaces))
 	for i, r := range playableRaces {
@@ -30,6 +68,7 @@ func CharGen(g Graphics) *Critter {
 	}
 	player.Inv = []*Item{
 		NewItemOfClass("potion of healing", ItemClassPotion),
+		NewItemOfClass("slime-mold", ItemClassFood),
 	}
 	player.Inv[0].Magic = &Spell{}
 	player.Inv[0].Magic.Effect = SpellHeal

@@ -36,6 +36,7 @@ const (
 	ItemClassWeapon
 	ItemClassApp
 	ItemClassPotion
+	ItemClassFood
 )
 
 var ItemClassDir map[ItemClassID]*ItemClass
@@ -46,6 +47,7 @@ func initItems() error {
 	ItemClassDir[ItemClassWeapon] = &ItemClass{SpriteItemWeaponGeneric, "weapon"}
 	ItemClassDir[ItemClassApp] = &ItemClass{SpriteItemAppGeneric, "apparel"}
 	ItemClassDir[ItemClassPotion] = &ItemClass{SpriteItemPotion, "potion"}
+	ItemClassDir[ItemClassFood] = &ItemClass{SpriteItemFoodGeneric, "food"}
 	return nil
 }
 
@@ -152,6 +154,10 @@ func UseItem(state *State, player *Critter, item *Item) {
 	} else if item.Class == ItemClassPotion {
 		g.Message("You quaff " + item.Name)
 		DoCastSpell(state, player, state.CurLevel, item.Magic)
+	} else if item.Class == ItemClassFood {
+		g.Message("You munch the " + item.Name)
+		state.Player.TimeSinceEaten = 0
+		state.Player.Hunger = HungerNormal
 	} else {
 		g.Message("There doesn't seem to be much use for that item.")
 		return

@@ -22,6 +22,7 @@ type Critter struct {
 	AI        *AiData
 	Casting   SpellData
 	SpellBook []*Spell
+	Speed     uint32
 }
 
 type StatBlock struct {
@@ -158,7 +159,7 @@ func (c *Critter) CanCast(s *Spell) bool {
 	return ret
 }
 
-func (c *Critter) CompleteDescription(g Graphics) {
+func (c *Critter) CompleteDescription(g Graphics, other ...string) {
 	wield := "Wielding nothing."
 	if c.Weapon != nil {
 		wield = "Wielding " + c.Weapon.DescribeExtra()
@@ -167,10 +168,15 @@ func (c *Critter) CompleteDescription(g Graphics) {
 	if c.Armor != nil {
 		wear = "Wearing " + c.Armor.DescribeExtra()
 	}
+	otherMsgs := ""
+	for _, m := range other {
+		otherMsgs += m + "\n"
+	}
 	g.LongMessage(
 		fmt.Sprintf("%s the %s %s", c.Name, GetMaleFemaleStr(c.Female), c.GetRace().Name),
 		wield,
 		wear,
+		otherMsgs,
 	)
 }
 

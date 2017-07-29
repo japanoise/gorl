@@ -31,6 +31,7 @@ type Curses struct {
 	Sprites     map[gorl.Sprite]*CursesSprite
 	TileSprites map[gorl.TileID]*CursesSprite
 	Messages    []string
+	MessageLog  []string
 }
 
 type CursesSprite struct {
@@ -40,7 +41,7 @@ type CursesSprite struct {
 }
 
 func NewCurses() *Curses {
-	retval := &Curses{getSprites(), getTileSprites(), nil}
+	retval := &Curses{getSprites(), getTileSprites(), nil, []string{"Beginning of log."}}
 	return retval
 }
 
@@ -189,6 +190,7 @@ func (c *Curses) flushMessages() {
 			termbox.Flush()
 		}
 	}
+	c.MessageLog = append(c.MessageLog, c.Messages...)
 	c.Messages = nil
 }
 
@@ -359,4 +361,8 @@ func (c *Curses) DeathScreen(player *gorl.Critter, killer string) {
 		termbox.Flush()
 		looping = termbox.PollEvent().Type != termbox.EventKey
 	}
+}
+
+func (c *Curses) ShowMessageLog() {
+	termutil.DisplayScreenMessage(c.MessageLog...)
 }

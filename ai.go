@@ -4,6 +4,7 @@ import "math"
 
 type AiData struct {
 	Active bool
+	TimeEl uint32
 }
 
 // Interface for something placed into the world
@@ -25,9 +26,13 @@ func (p *Point) GetXY() (int, int) {
 	return p.X, p.Y
 }
 
-func AiOneTurn(state *State, player *Critter, pdjmap *DijkstraMap) (bool, *Critter) {
+func AiOneTurn(state *State, player *Critter, pdjmap *DijkstraMap) (bool, string) {
+	turnlen, starved := state.UpdateTimer(player)
+	if starved {
+		return true, "starvation"
+	}
 	dead := false
-	var killer *Critter = nil
+	killer := ""
 	for _, monster := range state.Monsters {
 		if monster == nil {
 			continue
@@ -36,12 +41,16 @@ func AiOneTurn(state *State, player *Critter, pdjmap *DijkstraMap) (bool, *Critt
 			monster.AI = newAI()
 		}
 		if monster.AI.Active {
+			monster.AI.TimeEl += turnlen
 			target := monster.Chase(state.CurLevel, pdjmap)
-			if target == player && !dead {
-				dead = dead || Attack(true, false, state.CurLevel, state.Out, monster, player)
-				if dead {
-					killer = monster
+			for monster.AI.TimeEl >= monster.Speed {
+				if target == player && !dead {
+					dead = dead || Attack(true, false, state.CurLevel, state.Out, monster, player)
+					if dead {
+						killer = monster.GetName()
+					}
 				}
+				monster.AI.TimeEl -= monster.Speed
 			}
 		}
 	}
@@ -61,5 +70,5 @@ func Dist(c1, c2 Placed) int {
 }
 
 func newAI() *AiData {
-	return &AiData{false}
+	return &AiData{false, 0}
 }
