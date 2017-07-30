@@ -44,9 +44,9 @@ func StartGame(g Graphics, i Input) error {
 				state.Out.AckMessage(err.Error())
 				continue
 			} else {
-				state.CurLevel = newstate.CurLevel
-				state.Monsters = newstate.Monsters
-				state.Dungeon = newstate.Dungeon
+				state = newstate
+				state.Out = g
+				state.In = i
 			}
 			if state.Dungeon == 0 {
 				player.X = over.SavedPx
