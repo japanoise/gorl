@@ -48,5 +48,15 @@
 		"Name": "cave entrance",
 		"Passable": true,
 		"Transparent": true
+	},
+	"10": {
+		"Name": "ocean water",
+		"Passable": false,
+		"Transparent": true
+	},
+	"11": {
+		"Name": "impassable mountains",
+		"Passable": false,
+		"Transparent": false
 	}
 }

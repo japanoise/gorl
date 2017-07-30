@@ -48,14 +48,18 @@ func StartGame(g Graphics, i Input) error {
 				state.Monsters = newstate.Monsters
 				state.Dungeon = newstate.Dungeon
 			}
-			if state.Dungeon <= 0 {
+			if state.Dungeon == 0 {
 				player.X = over.SavedPx
 				player.Y = over.SavedPy
 				state.Dungeon = 0
 				state.CurLevel = over.M
 				doMainLoop(state, player, over, nil)
-			} else {
+			} else if state.Dungeon > 0 {
 				doMainLoop(state, player, over, over.M.Tiles[over.SavedPx][over.SavedPy].OwData.Dungeon)
+			} else {
+				over.MetaOw.Tiles[player.X][player.Y].Here = player
+				state.CurLevel = over.MetaOw
+				doMainLoop(state, player, over, nil)
 			}
 		} else {
 			playing = false
@@ -126,8 +130,10 @@ func startLogging() error {
 func doMainLoop(state *State, player *Critter, over *Overworld, stdun *StateDungeon) {
 	if state.Dungeon > 0 {
 		state.CurLevel.Tiles[player.X][player.Y].Here = player
-	} else {
+	} else if state.Dungeon == 0 {
 		state.CurLevel = over.M
+	} else {
+		state.CurLevel = over.MetaOw
 	}
 	mydun := stdun
 	playing := true
@@ -143,7 +149,7 @@ func doMainLoop(state *State, player *Critter, over *Overworld, stdun *StateDung
 			state.Out.Dungeon(state.CurLevel, player.X, player.Y, status)
 		} else {
 			CalcVisibility(state.CurLevel, player, 40)
-			state.Out.Overworld(over.M, player.X, player.Y, status)
+			state.Out.Overworld(state.CurLevel, player.X, player.Y, status)
 		}
 		var target *Critter
 		act := state.In.GetAction() // Poll for an action
@@ -152,16 +158,22 @@ func doMainLoop(state *State, player *Critter, over *Overworld, stdun *StateDung
 		}
 		switch act { // Act on the action
 		case PlayerClimbUp:
-			if state.Dungeon <= 0 {
+			if state.Dungeon <= -1 {
 				state.Out.Message("There are no stairs to climb up here!")
+			} else if state.Dungeon == 0 {
+				pmoved = overup(state, player, over)
 			} else {
 				pmoved = dungeonclimbup(state, player, over, mydun)
 			}
 		case PlayerClimbDown:
-			if state.Dungeon <= 0 {
+			if state.Dungeon == 0 {
 				mydun, pmoved = overdown(state, player, over)
-			} else {
+			} else if state.Dungeon == -1 {
+				pmoved = metadown(state, player, over)
+			} else if state.Dungeon > 0 {
 				pmoved = dungeonclimbdown(state, player, over, mydun)
+			} else {
+				state.Out.Message("There are no stairs to climb down here!")
 			}
 		case PlayerDown:
 			target = Move(state.CurLevel, player, 0, +1)
@@ -208,8 +220,13 @@ func doMainLoop(state *State, player *Critter, over *Overworld, stdun *StateDung
 		case PlayerStats:
 			player.CompleteDescription(state.Out, GetHungerString(state.Player.Hunger))
 		case DoSaveGame:
-			over.SavedPx = player.X
-			over.SavedPy = player.Y
+			if state.Dungeon == 0 {
+				over.SavedPx = player.X
+				over.SavedPy = player.Y
+			} else if state.Dungeon > 0 {
+				items := make([]*DungeonItem, 0, 20)
+				mydun.Items[state.Dungeon] = state.CurLevel.CollectItems(items)
+			}
 			err := SaveGame(player, state, over)
 			if err == nil {
 				state.Out.Message("Game saved.")
@@ -278,9 +295,19 @@ func doMainLoop(state *State, player *Critter, over *Overworld, stdun *StateDung
 }
 
 func CalcStatus(state *State, player *Critter) string {
-	return fmt.Sprintf("[%d/%d hp] [%d/%d mp] %s, level %d, on level %d",
-		player.Stats.CurHp, player.Stats.MaxHp, player.Stats.CurMp, player.Stats.MaxMp,
-		player.GetName(), player.Stats.Level, state.Dungeon)
+	if state.Dungeon > 0 {
+		return fmt.Sprintf("[%d/%d hp] [%d/%d mp] %s, level %d, on level %d",
+			player.Stats.CurHp, player.Stats.MaxHp, player.Stats.CurMp, player.Stats.MaxMp,
+			player.GetName(), player.Stats.Level, state.Dungeon)
+	} else if state.Dungeon == -1 {
+		return fmt.Sprintf("[%d/%d hp] [%d/%d mp] %s, level %d, on the fast travel map",
+			player.Stats.CurHp, player.Stats.MaxHp, player.Stats.CurMp, player.Stats.MaxMp,
+			player.GetName(), player.Stats.Level)
+	} else {
+		return fmt.Sprintf("[%d/%d hp] [%d/%d mp] %s, level %d, wandering the wilderness",
+			player.Stats.CurHp, player.Stats.MaxHp, player.Stats.CurMp, player.Stats.MaxMp,
+			player.GetName(), player.Stats.Level)
+	}
 }
 
 func dungeonclimbup(state *State, player *Critter, over *Overworld, mydun *StateDungeon) bool {
@@ -338,6 +365,17 @@ func overdown(state *State, player *Critter, over *Overworld) (*StateDungeon, bo
 	return nil, false
 }
 
+func overup(state *State, player *Critter, over *Overworld) bool {
+	over.SavedPx = player.X
+	over.SavedPy = player.Y
+	state.Dungeon = -1
+	state.CurLevel = over.MetaOw
+	player.X = over.MetaPx
+	player.Y = over.MetaPy
+	over.MetaOw.Tiles[player.X][player.Y].Here = player
+	return true
+}
+
 func dungeonclimbdown(state *State, player *Critter, over *Overworld, mydun *StateDungeon) bool {
 	if state.CurLevel.Tiles[player.X][player.Y].Id == TileStairDown {
 		state.Out.Message("You climb down the stairs...")
@@ -358,6 +396,23 @@ func dungeonclimbdown(state *State, player *Critter, over *Overworld, mydun *Sta
 		state.Out.Message("There are no stairs here!")
 	}
 	return false
+}
+
+func metadown(state *State, player *Critter, over *Overworld) bool {
+	if player.X == over.MetaPx && player.Y == over.MetaPy {
+		player.X = over.SavedPx
+		player.Y = over.SavedPy
+		state.CurLevel = over.M
+	} else {
+		over.MetaPx = player.X
+		over.MetaPy = player.Y
+		state.CurLevel = over.MetaOw.MetaOWGenMap(player.X, player.Y)
+		over.M = state.CurLevel
+		player.X, player.Y = 50, 50
+		state.CurLevel.Tiles[player.X][player.Y].Here = player
+	}
+	state.Dungeon = 0
+	return true
 }
 
 func loadConfigFile(configfile string, v interface{}) error {

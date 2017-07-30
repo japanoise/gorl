@@ -88,8 +88,12 @@ func LoadGame(state *State) (*Critter, *State, *Overworld, error) {
 	if MySaveVersion != SaveVersionGit && MySaveVersion != data.Version {
 		state.Out.Message("Warning: Save versions differ. You might experience glitches.")
 	}
-	if data.St.Dungeon <= 0 {
+	debug.Println("x:", data.Ow.SavedPx, "y:", data.Ow.SavedPy)
+	debug.Println(data.Ow.M.Tiles[data.Ow.SavedPx][data.Ow.SavedPy])
+	if data.St.Dungeon == 0 {
 		data.St.CurLevel = data.Ow.M
+	} else if data.St.Dungeon == -1 {
+		data.St.CurLevel = data.Ow.MetaOw
 	} else {
 		data.St.CurLevel, data.St.Monsters = data.Ow.M.Tiles[data.Ow.SavedPx][data.Ow.SavedPy].OwData.Dungeon.GetDunLevelFromStorage(data.St.Dungeon)
 	}

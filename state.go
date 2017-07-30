@@ -55,10 +55,13 @@ func (s *State) UpdateTimer(player *Critter) (uint32, bool) {
 	var oneturn uint32 = player.Speed
 	if s.Dungeon > 0 {
 		s.IncMili(oneturn)
-		s.updateHunger(oneturn)
 		return oneturn, s.updateHunger(oneturn)
-	} else {
+	} else if s.Dungeon == 0 {
 		ret := oneturn * 100
+		s.IncMili(ret)
+		return ret, s.updateHunger(ret)
+	} else {
+		ret := oneturn * 100 * 100
 		s.IncMili(ret)
 		return ret, s.updateHunger(ret)
 	}
@@ -69,14 +72,20 @@ func (s *State) updateHunger(time uint32) bool {
 	if s.Player.TimeSinceEaten >= TimeStarvation {
 		s.Out.Message("Unable to continue, you collapse.")
 		return true
-	} else if s.Player.TimeSinceEaten >= TimeDying && s.Player.Hunger != HungerDying {
-		s.Out.Message("You are dying of starvation!")
+	} else if s.Player.TimeSinceEaten >= TimeDying {
+		if s.Player.Hunger != HungerDying {
+			s.Out.Message("You are dying of starvation!")
+		}
 		s.Player.Hunger = HungerDying
-	} else if s.Player.TimeSinceEaten >= TimeStarving && s.Player.Hunger != HungerStarving {
-		s.Out.Message("You are starving!")
+	} else if s.Player.TimeSinceEaten >= TimeStarving {
+		if s.Player.Hunger != HungerStarving {
+			s.Out.Message("You are starving!")
+		}
 		s.Player.Hunger = HungerStarving
-	} else if s.Player.TimeSinceEaten >= TimeHungry && s.Player.Hunger != HungerHungry {
-		s.Out.Message("You are feeling hungry...")
+	} else if s.Player.TimeSinceEaten >= TimeHungry {
+		if s.Player.Hunger != HungerHungry {
+			s.Out.Message("You are feeling hungry...")
+		}
 		s.Player.Hunger = HungerHungry
 	}
 	return false

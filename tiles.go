@@ -13,6 +13,8 @@ const (
 	TileSea
 	TileFreshwater
 	TileOverworldDungeon
+	TileOcean
+	TileMountain
 )
 
 type Tile struct {
