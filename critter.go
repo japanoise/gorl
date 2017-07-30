@@ -23,6 +23,7 @@ type Critter struct {
 	Casting   SpellData
 	SpellBook []*Spell
 	Speed     uint32
+	Flags     CharFlags
 }
 
 type StatBlock struct {

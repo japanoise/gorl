@@ -37,6 +37,7 @@ type Graphics interface {
 	GetString(prompt string, empty bool) string        /* Get a free string */
 	DeathScreen(player *Critter, killer string)        /* Called when the player dies. Extra points for a tombstone. */
 	ShowMessageLog()                                   /* Self explanatory. */
+	YN(prompt string) bool                             /* Ask the player to confirm something */
 }
 
 /* Input interface */

@@ -420,3 +420,9 @@ func (c *Curses) AckMessage(msg string) {
 		looping = ev.Type != termbox.EventKey
 	}
 }
+
+func (c *Curses) YN(prompt string) bool {
+	ret := termutil.YesNo(prompt, nil)
+	termbox.HideCursor()
+	return ret
+}

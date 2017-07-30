@@ -132,8 +132,11 @@ func doMainLoop(state *State, player *Critter, over *Overworld, stdun *StateDung
 		state.CurLevel.Tiles[player.X][player.Y].Here = player
 	} else if state.Dungeon == 0 {
 		state.CurLevel = over.M
-	} else {
+	} else if state.Dungeon == -1 {
 		state.CurLevel = over.MetaOw
+	} else if state.Dungeon == -2 {
+		state.CurLevel, state.Monsters = VilGen(over.M.Tiles[over.SavedPx][over.SavedPy].OwData.OWSeed)
+		state.CurLevel.Tiles[player.X][player.Y].Here = player
 	}
 	mydun := stdun
 	playing := true
@@ -158,12 +161,14 @@ func doMainLoop(state *State, player *Critter, over *Overworld, stdun *StateDung
 		}
 		switch act { // Act on the action
 		case PlayerClimbUp:
-			if state.Dungeon <= -1 {
+			if state.Dungeon == -1 {
 				state.Out.Message("There are no stairs to climb up here!")
 			} else if state.Dungeon == 0 {
 				pmoved = overup(state, player, over)
-			} else {
+			} else if state.Dungeon > 0 {
 				pmoved = dungeonclimbup(state, player, over, mydun)
+			} else {
+				pmoved = returntoow(state, player, over)
 			}
 		case PlayerClimbDown:
 			if state.Dungeon == 0 {
@@ -254,9 +259,12 @@ func doMainLoop(state *State, player *Critter, over *Overworld, stdun *StateDung
 
 		// End of actions, now act on the consequences
 		if target != nil {
-			delete := Attack(true, true, state.CurLevel, state.Out, player, target)
-			if delete {
-				target.Kill(state)
+			if !target.HasFlags(FlagFriendly) || state.Out.YN("Are you sure you want to attack "+target.GetTheName()+"?") {
+				target.Flags &= (0xFF ^ FlagFriendly) // Unset friendly flag
+				delete := Attack(true, true, state.CurLevel, state.Out, player, target)
+				if delete {
+					target.Kill(state)
+				}
 			}
 		}
 
@@ -301,6 +309,10 @@ func CalcStatus(state *State, player *Critter) string {
 			player.GetName(), player.Stats.Level, state.Dungeon)
 	} else if state.Dungeon == -1 {
 		return fmt.Sprintf("[%d/%d hp] [%d/%d mp] %s, level %d, on the fast travel map",
+			player.Stats.CurHp, player.Stats.MaxHp, player.Stats.CurMp, player.Stats.MaxMp,
+			player.GetName(), player.Stats.Level)
+	} else if state.Dungeon == -2 {
+		return fmt.Sprintf("[%d/%d hp] [%d/%d mp] %s, level %d, in a civilized village",
 			player.Stats.CurHp, player.Stats.MaxHp, player.Stats.CurMp, player.Stats.MaxMp,
 			player.GetName(), player.Stats.Level)
 	} else {
@@ -361,6 +373,19 @@ func overdown(state *State, player *Critter, over *Overworld) (*StateDungeon, bo
 			state.CurLevel = dunlevel
 			return mydun, true
 		}
+	} else if state.CurLevel.Tiles[player.X][player.Y].Id == TileOverworldVillage {
+		tile := state.CurLevel.Tiles[player.X][player.Y]
+		if tile.OwData == nil {
+			state.Out.Message("This village doesn't welcome adventurers.")
+		} else {
+			state.Out.Message("You make your way into the little village...")
+			over.SavedPx = player.X
+			over.SavedPy = player.Y
+			state.Dungeon = -2
+			state.CurLevel, state.Monsters = VilGen(tile.OwData.OWSeed)
+			player.X, player.Y = 50, 99
+			state.CurLevel.Tiles[player.X][player.Y].Here = player
+		}
 	}
 	return nil, false
 }
@@ -411,6 +436,15 @@ func metadown(state *State, player *Critter, over *Overworld) bool {
 		player.X, player.Y = 50, 50
 		state.CurLevel.Tiles[player.X][player.Y].Here = player
 	}
+	state.Dungeon = 0
+	return true
+}
+
+func returntoow(state *State, player *Critter, over *Overworld) bool {
+	state.Out.Message("You disembark.")
+	player.X = over.SavedPx
+	player.Y = over.SavedPy
+	state.CurLevel = over.M
 	state.Dungeon = 0
 	return true
 }

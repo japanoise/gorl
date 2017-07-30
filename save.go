@@ -94,7 +94,7 @@ func LoadGame(state *State) (*Critter, *State, *Overworld, error) {
 		data.St.CurLevel = data.Ow.M
 	} else if data.St.Dungeon == -1 {
 		data.St.CurLevel = data.Ow.MetaOw
-	} else {
+	} else if data.St.Dungeon > 0 {
 		data.St.CurLevel, data.St.Monsters = data.Ow.M.Tiles[data.Ow.SavedPx][data.Ow.SavedPy].OwData.Dungeon.GetDunLevelFromStorage(data.St.Dungeon)
 	}
 	return data.Player, data.St, data.Ow, nil

@@ -113,6 +113,19 @@ func GenOWMap(seed int64, north, east, west, south TileID) *Map {
 			}
 		}
 	}
+
+	// Place the towns
+	duns = 5 + r.Intn(5)
+	for i := 0; i < duns; i++ {
+		looping := true
+		for looping {
+			rx, ry := passw+r.Intn(ranx), passn+r.Intn(rany)
+			if m.Tiles[rx][ry].Id == TileGrass || m.Tiles[rx][ry].Id == TileGrass2 {
+				m.Tiles[rx][ry] = MapTile{nil, TileOverworldVillage, nil, &MapOverworldData{nil, NewSeed()}, false, false}
+				looping = false
+			}
+		}
+	}
 	return m
 }
 

@@ -15,6 +15,9 @@ const (
 	TileOverworldDungeon
 	TileOcean
 	TileMountain
+	TileOverworldVillage
+	TileLetterI
+	TileLetterN
 )
 
 type Tile struct {
@@ -112,10 +115,14 @@ func TileNSquaresInDirFromXY(m *Map, squares int, dir Direction, x, y int) *MapT
 
 // Wall tile
 func WallTile() MapTile {
-	return MapTile{nil, TileWall, []*Item{}, nil, false, false}
+	return TileOfClass(TileWall)
 }
 
 // Floor tile
 func FloorTile() MapTile {
-	return MapTile{nil, TileFloor, []*Item{}, nil, false, false}
+	return TileOfClass(TileFloor)
+}
+
+func TileOfClass(id TileID) MapTile {
+	return MapTile{nil, id, nil, nil, false, false}
 }

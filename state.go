@@ -53,17 +53,17 @@ func (s *State) IncMonth(amount uint8) {
 
 func (s *State) UpdateTimer(player *Critter) (uint32, bool) {
 	var oneturn uint32 = player.Speed
-	if s.Dungeon > 0 {
-		s.IncMili(oneturn)
-		return oneturn, s.updateHunger(oneturn)
+	if s.Dungeon == -1 {
+		ret := oneturn * 100 * 100
+		s.IncMili(ret)
+		return ret, s.updateHunger(ret)
 	} else if s.Dungeon == 0 {
 		ret := oneturn * 100
 		s.IncMili(ret)
 		return ret, s.updateHunger(ret)
 	} else {
-		ret := oneturn * 100 * 100
-		s.IncMili(ret)
-		return ret, s.updateHunger(ret)
+		s.IncMili(oneturn)
+		return oneturn, s.updateHunger(oneturn)
 	}
 }
 

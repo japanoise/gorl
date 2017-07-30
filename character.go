@@ -1,6 +1,8 @@
 package gorl
 
 import (
+	"math/rand"
+
 	"github.com/japanoise/engutil"
 )
 
@@ -18,6 +20,14 @@ const (
 	HungerStarving
 	HungerDying
 	HungerDead
+)
+
+type CharFlags uint8
+
+const (
+	FlagFriendly CharFlags = 1 << iota
+	FlagShopkeep
+	FlagInnkeep
 )
 
 type PlayerData struct {
@@ -77,4 +87,28 @@ func CharGen(g Graphics) *Critter {
 	slime := NewItemOfClass("slime-mold", ItemClassFood)
 	player.Inv = []*InvItem{NewInvItem(potion, 3), NewInvItem(slime, 1)}
 	return player
+}
+
+func NewFriendly(r *rand.Rand, flags CharFlags) *Critter {
+	race := playableRaces[r.Intn(len(playableRaces))]
+	female := r.Intn(2) == 0
+	ret := GetMonster(race, female)
+	ret.Flags = FlagFriendly
+	ret.Flags |= flags
+	return ret
+}
+
+func (c *Critter) HasFlags(flags CharFlags) bool {
+	return c.Flags&flags != 0
+}
+
+func (c *Critter) GenerateName() {
+	if c.Female {
+		c.Name = "Alice"
+	} else {
+		c.Name = "Bob"
+	}
+	if c.HasFlags(FlagInnkeep) {
+		c.Name += " the barkeep"
+	}
 }

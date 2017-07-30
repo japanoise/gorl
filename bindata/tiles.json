@@ -58,5 +58,20 @@
 		"Name": "impassable mountains",
 		"Passable": false,
 		"Transparent": false
+	},
+	"12": {
+		"Name": "a friendly village",
+		"Passable": true,
+		"Transparent": true
+	},
+	"13": {
+		"Name": "the letter I",
+		"Passable": false,
+		"Transparent": false
+	},
+	"14": {
+		"Name": "the letter N",
+		"Passable": false,
+		"Transparent": false
 	}
 }

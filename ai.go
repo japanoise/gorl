@@ -40,7 +40,7 @@ func AiOneTurn(state *State, player *Critter, pdjmap *DijkstraMap) (bool, string
 		if monster.AI == nil {
 			monster.AI = newAI()
 		}
-		if monster.AI.Active {
+		if monster.AI.Active && !monster.HasFlags(FlagFriendly) {
 			monster.AI.TimeEl += turnlen
 			target := monster.Chase(state.CurLevel, pdjmap)
 			for monster.AI.TimeEl >= monster.Speed {
