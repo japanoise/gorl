@@ -93,8 +93,8 @@ func NewFriendly(r *rand.Rand, flags CharFlags) *Critter {
 	race := playableRaces[r.Intn(len(playableRaces))]
 	female := r.Intn(2) == 0
 	ret := GetMonster(race, female)
-	ret.Flags = FlagFriendly
-	ret.Flags |= flags
+	ret.Flags = FlagFriendly | flags
+	ret.Dialog = 1
 	return ret
 }
 

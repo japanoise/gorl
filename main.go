@@ -251,6 +251,8 @@ func doMainLoop(state *State, player *Critter, over *Overworld, stdun *StateDung
 			}
 		case DropItems:
 			DropItem(state, player)
+		case Chat:
+			DoChat(state, player)
 		case DoNothing:
 		default:
 			state.Out.Message("Key unbound or unknown command.")

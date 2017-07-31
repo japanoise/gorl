@@ -36,5 +36,6 @@
     "b": "South West",
     "n": "South East",
     "g": "Grab",
+    "c": "Chat",
     "d": "Drop"
 }

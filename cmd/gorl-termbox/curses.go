@@ -426,3 +426,7 @@ func (c *Curses) YN(prompt string) bool {
 	termbox.HideCursor()
 	return ret
 }
+
+func (c *Curses) ChatMessage(msg string) {
+	c.LongMessage(msg)
+}

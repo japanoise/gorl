@@ -24,6 +24,7 @@ type Critter struct {
 	SpellBook []*Spell
 	Speed     uint32
 	Flags     CharFlags
+	Dialog    NodeID
 }
 
 type StatBlock struct {
