@@ -61,9 +61,7 @@ func (d *StateDungeon) GetDunLevel(oldelevation, elevation int, monlist []*Critt
 	if !d.Visited[elevation] {
 		d.Seeds[elevation] = NewSeed()
 	}
-	rand.Seed(d.Seeds[elevation])
-	m, sp := DunGen(elevation)
-	DunAddFeatures(m, sp, elevation, d.Depth)
+	m, sp := d.GenLevel(elevation)
 	if !d.Visited[elevation] {
 		d.Monsters[elevation] = Populate(m, sp, elevation)
 		d.Visited[elevation] = true
@@ -79,9 +77,7 @@ func (d *StateDungeon) GetDunLevel(oldelevation, elevation int, monlist []*Critt
 }
 
 func (d *StateDungeon) GetDunLevelFromStorage(elevation int) (*Map, []*Critter) {
-	rand.Seed(d.Seeds[elevation])
-	m, sp := DunGen(elevation)
-	DunAddFeatures(m, sp, elevation, d.Depth)
+	m, _ := d.GenLevel(elevation)
 	for _, mon := range d.Monsters[elevation] {
 		if mon != nil {
 			m.Tiles[mon.X][mon.Y].Here = mon
@@ -95,7 +91,14 @@ func NewSeed() int64 {
 	return time.Now().UTC().UnixNano()
 }
 
-func DunGen(elevation int) (*Map, []SpawnRegion) {
+func (d *StateDungeon) GenLevel(elevation int) (*Map, []SpawnRegion) {
+	r := rand.New(rand.NewSource(d.Seeds[elevation]))
+	m, sp := dunGen(elevation, r)
+	dunAddFeatures(m, sp, elevation, d.Depth, r)
+	return m, sp
+}
+
+func dunGen(elevation int, r *rand.Rand) (*Map, []SpawnRegion) {
 	sizex, sizey := 100, 100
 	retval := GetBlankMap(elevation, sizex, sizey)
 	numroomsx := 5
@@ -111,7 +114,7 @@ func DunGen(elevation int) (*Map, []SpawnRegion) {
 			anchorx := xrn * roomsx
 			anchory := yrn * roomsy
 			var posx, posy, cornerx, cornery int
-			if rand.Intn(3) == 0 {
+			if r.Intn(3) == 0 {
 				// Build an intersection
 				posx = anchorx + xh - 1
 				posy = anchory + yh - 1
@@ -119,10 +122,10 @@ func DunGen(elevation int) (*Map, []SpawnRegion) {
 				cornery = posy + 2
 			} else {
 				// Build a room and add it to the spawn list
-				posx = anchorx + rand.Intn(roomsx/3)
-				posy = anchory + rand.Intn(roomsy/3)
-				cornerx = (anchorx + roomsx - 2) - rand.Intn(roomsx/3)
-				cornery = (anchory + roomsy - 2) - rand.Intn(roomsy/3)
+				posx = anchorx + r.Intn(roomsx/3)
+				posy = anchory + r.Intn(roomsy/3)
+				cornerx = (anchorx + roomsx - 2) - r.Intn(roomsx/3)
+				cornery = (anchory + roomsy - 2) - r.Intn(roomsy/3)
 				spawns = append(spawns, SpawnRegion{
 					posx + 1, posy + 1,
 					cornerx - 1, cornery - 1,
@@ -170,23 +173,23 @@ func DunGen(elevation int) (*Map, []SpawnRegion) {
 }
 
 // Adds features to the dungeon - only staircases for now.
-func DunAddFeatures(m *Map, spawnrooms []SpawnRegion, elevation, maxdepth int) {
+func dunAddFeatures(m *Map, spawnrooms []SpawnRegion, elevation, maxdepth int, r *rand.Rand) {
 	// Add stairs leading up
-	room := spawnrooms[rand.Intn(len(spawnrooms))]
+	room := spawnrooms[r.Intn(len(spawnrooms))]
 	roomw := room.BotRightX - room.TopLeftX
 	roomh := room.BotRightY - room.TopLeftY
-	x := room.TopLeftX + rand.Intn(roomw)
-	y := room.TopLeftY + rand.Intn(roomh)
+	x := room.TopLeftX + r.Intn(roomw)
+	y := room.TopLeftY + r.Intn(roomh)
 	m.Tiles[x][y].Id = TileStairUp
 	m.UpStairsX = x
 	m.UpStairsY = y
 	// Add stairs leading down
 	if elevation != maxdepth {
-		room := spawnrooms[rand.Intn(len(spawnrooms))]
+		room := spawnrooms[r.Intn(len(spawnrooms))]
 		roomw := room.BotRightX - room.TopLeftX
 		roomh := room.BotRightY - room.TopLeftY
-		x := room.TopLeftX + rand.Intn(roomw)
-		y := room.TopLeftY + rand.Intn(roomh)
+		x := room.TopLeftX + r.Intn(roomw)
+		y := room.TopLeftY + r.Intn(roomh)
 		m.Tiles[x][y].Id = TileStairDown
 		m.DownStairsX = x
 		m.DownStairsY = y
