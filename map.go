@@ -193,7 +193,7 @@ func los(m *Map, x0, y0, x1, y1 int) {
 			return
 		}
 		if m.CantSeeThrough(xnext, ynext) {
-			//tag_memorised(xnext, ynext) // make a note of the wall
+			m.Tiles[xnext][ynext].Disc = true
 			return
 		}
 
