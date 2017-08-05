@@ -1,0 +1,46 @@
+* Higher Priority
+** Complete stat blocks
+** Shopping
+*** Could use "generator items" for this, otherwise have npcs sell their inventory
+** Hidden loot (undiscovered) ala other RLs
+** curses/blessings
+** classes
+** content
+*** monsters
+*** weapons & armor
+**** inc magical
+*** spellbooks
+*** potions
+*** scrolls
+*** conversations
+** Monster abilities - as magic spells
+** improve terrain generator
+*** odd shapes?
+** overworld critters?
+** Day/Night, Moon Phases, Light level
+** Map features
+*** Doors
+*** Windows
+*** Dungeon specifics
+**** traps
+**** puzzles
+** Ranged weapons
+* Lower Priority/Wishlist
+** quests
+*** main quest/story
+** rank, reputation, faction
+** owning property
+*** build a base/fortress
+** safer/more extensive save data
+*** custom bin format?
+** persistency - save data to disk
+*** dorf fortress?
+** 'interesting' npcs
+** larger settlements
+** pets, companions
+** local area knowledge
+** wilderness skills
+** crafting
+** biomes
+** sea travel
+*** other landmasses?
