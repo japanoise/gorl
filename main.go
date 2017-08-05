@@ -147,15 +147,20 @@ func doMainLoop(state *State, player *Critter, over *Overworld, stdun *StateDung
 	pmoved := true
 	pdjmap := BlankDMap(state.CurLevel)
 	pdjmap.Calc(player)
+	lastll := -1337
 	for playing {
 		// Recalculate the status bar
 		status := CalcStatus(state, player)
+		ll := state.GetLightLevel()
+		if ll != lastll {
+			state.CurLevel.Darken()
+			lastll = ll
+		}
+		CalcVisibility(state.CurLevel, player, ll)
 		// Draw the level
 		if state.Dungeon > 0 {
-			CalcVisibility(state.CurLevel, player, 20) //Eventually, this will be torch level.
 			state.Out.Dungeon(state.CurLevel, player.X, player.Y, status)
 		} else {
-			CalcVisibility(state.CurLevel, player, 40)
 			state.Out.Overworld(state.CurLevel, player.X, player.Y, status)
 		}
 		var target *Critter
@@ -165,6 +170,7 @@ func doMainLoop(state *State, player *Critter, over *Overworld, stdun *StateDung
 		}
 		switch act { // Act on the action
 		case PlayerClimbUp:
+			lastll++ // Force a re-light of the level next iteration
 			if state.Dungeon == -1 {
 				state.Out.Message("There are no stairs to climb up here!")
 			} else if state.Dungeon == 0 {
@@ -175,6 +181,7 @@ func doMainLoop(state *State, player *Critter, over *Overworld, stdun *StateDung
 				pmoved = returntoow(state, player, over)
 			}
 		case PlayerClimbDown:
+			lastll++
 			if state.Dungeon == 0 {
 				mydun, pmoved = overdown(state, player, over)
 			} else if state.Dungeon == -1 {
@@ -331,7 +338,11 @@ func CalcStatus(state *State, player *Critter) string {
 func dungeonclimbup(state *State, player *Critter, over *Overworld, mydun *StateDungeon) bool {
 	if state.CurLevel.Tiles[player.X][player.Y].Id == TileStairUp {
 		if state.Dungeon == 1 {
-			state.Out.Message("There's daylight at the top of the stairs!")
+			if state.IsDay() {
+				state.Out.Message("There's daylight at the top of the stairs!")
+			} else {
+				state.Out.Message("You grope your way up the stairs to the surface...")
+			}
 		} else {
 			state.Out.Message("You climb up the stairs...")
 		}

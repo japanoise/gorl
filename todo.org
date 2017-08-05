@@ -17,7 +17,9 @@
 ** improve terrain generator
 *** odd shapes?
 ** overworld critters?
-** Day/Night, Moon Phases, Light level
+** DONE Day/Night
+** Moon Phases
+** Light level with torches
 ** Map features
 *** Doors
 *** Windows

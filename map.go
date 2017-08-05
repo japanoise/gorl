@@ -118,6 +118,14 @@ func (m *Map) PlaceCritterAtUpStairs(c *Critter) {
 	m.Tiles[c.X][c.Y].Here = c
 }
 
+func (m *Map) Darken() {
+	for x := 0; x < m.SizeX; x++ {
+		for y := 0; y < m.SizeY; y++ {
+			m.Tiles[x][y].Lit = false
+		}
+	}
+}
+
 func GetBlankMap(elevation, sizex, sizey int) *Map {
 	retval := Map{
 		make([][]MapTile, sizex),
