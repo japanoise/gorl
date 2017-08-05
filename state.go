@@ -2,12 +2,6 @@ package gorl
 
 /* Game state */
 
-import "log"
-
-var (
-	debug *log.Logger
-)
-
 type State struct {
 	Monsters  []*Critter `json:"-"`
 	CurLevel  *Map       `json:"-"`

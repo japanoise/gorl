@@ -9,6 +9,10 @@ import (
 	homedir "github.com/mitchellh/go-homedir"
 )
 
+var (
+	debug *log.Logger
+)
+
 func StartGame(g Graphics, i Input) error {
 	state := &State{
 		[]*Critter{},
