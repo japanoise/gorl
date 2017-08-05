@@ -39,6 +39,7 @@ const (
 	ItemClassApp
 	ItemClassPotion
 	ItemClassFood
+	ItemClassMercGen
 )
 
 type InvItem struct {
@@ -54,6 +55,7 @@ func initItems() error {
 	ItemClassDir[ItemClassApp] = &ItemClass{SpriteItemAppGeneric, "apparel"}
 	ItemClassDir[ItemClassPotion] = &ItemClass{SpriteItemPotion, "potion"}
 	ItemClassDir[ItemClassFood] = &ItemClass{SpriteItemFoodGeneric, "food"}
+	ItemClassDir[ItemClassMercGen] = &ItemClass{SpriteItemFoodGeneric, "mercantile generator"}
 	return nil
 }
 
@@ -119,7 +121,17 @@ func (i *Item) DescribeExtra() string {
 		ret += fmt.Sprintf(" [%s]", GetSmallDiceString(i.DamageAc))
 	case ItemClassApp:
 		ret += fmt.Sprintf(" [AC %d]", i.DamageAc)
+	case ItemClassMercGen:
+		ret = "Large piles of " + ret
 	}
+	return ret
+}
+
+func (i *Item) GenMerchItem() *Item {
+	var ret *Item = &Item{}
+	deepcopier.Copy(i).To(ret)
+	ret.Class = ItemClassID(ret.Bcu)
+	ret.Bcu = Uncursed
 	return ret
 }
 
@@ -213,6 +225,13 @@ func (c *Critter) AddInventoryItem(item *Item) {
 		}
 	}
 	c.Inv = append(c.Inv, NewInvItem(item, 1))
+}
+
+func NewMerch(id ItemClassID, value int, name string) *InvItem {
+	ret := NewInvItem(NewItemOfClass(name, ItemClassMercGen), 1)
+	ret.Items[0].Value = value
+	ret.Items[0].Bcu = BCU(id)
+	return ret
 }
 
 func NewInvItem(item *Item, quantity int) *InvItem {

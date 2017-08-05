@@ -48,6 +48,9 @@ func VilGen(seed int64) (*Map, []*Critter) {
 	inn := spawns[r.Intn(len(spawns))]
 	innkeep := NewFriendly(r, FlagInnkeep)
 	innkeep.GenerateName()
+	innkeep.Inv = []*InvItem{
+		NewMerch(ItemClassFood, 10, "Cornish Pasty"),
+	}
 	PlaceCritterInRoom(innkeep, ret, inn)
 	ret.Tiles[inn.TopLeftX+2][inn.TopLeftY-1] = TileOfClass(TileLetterI)
 	ret.Tiles[inn.TopLeftX+3][inn.TopLeftY-1] = TileOfClass(TileLetterN)

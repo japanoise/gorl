@@ -1,7 +1,7 @@
 * Higher Priority
 ** Complete stat blocks
-** Shopping
-*** Could use "generator items" for this, otherwise have npcs sell their inventory
+** DONE Shopping
+**** Could use "generator items" for this, otherwise have npcs sell their inventory
 ** Hidden loot (undiscovered) ala other RLs
 ** curses/blessings
 ** classes
