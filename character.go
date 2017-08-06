@@ -85,7 +85,11 @@ func CharGen(g Graphics) *Critter {
 	potion.Magic.Data = SpellSelf
 	potion.Magic.Name = "You feel a little better."
 	slime := NewItemOfClass("slime-mold", ItemClassFood)
-	player.Inv = []*InvItem{NewInvItem(potion, 3), NewInvItem(slime, 1)}
+	mace := NewItemOfClass("mace", ItemClassWeapon)
+	mace.DamageAc = SmallDice(1, 8)
+	longbow := NewItemOfClass("longbow", ItemClassRanged)
+	longbow.DamageAc = SmallDice(1, 8)
+	player.Inv = []*InvItem{NewInvItem(potion, 3), NewInvItem(slime, 1), NewInvItem(mace, 1), NewInvItem(longbow, 1)}
 	return player
 }
 

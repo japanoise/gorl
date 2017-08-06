@@ -229,6 +229,12 @@ func doMainLoop(state *State, player *Critter, over *Overworld, stdun *StateDung
 					crit.Kill(state)
 				}
 			}
+		case Fire:
+			rtarget, rdead := Shoot(state, player)
+			if rtarget != nil && rdead {
+				rtarget.Flags &= (0xFF ^ FlagFriendly)
+				rtarget.Kill(state)
+			}
 		case PlayerLook:
 			Look(state.CurLevel, state.Out, state.In, player)
 		case PlayerInventory:

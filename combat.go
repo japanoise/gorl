@@ -74,3 +74,36 @@ func MissMessage(aname, dname string, attacker, defender *Critter) string {
 	}
 	return fmt.Sprintf("%s misses %s", aname, dname)
 }
+
+func RangedAttack(interactive, pattacker bool, s *State, attacker, defender *Critter) bool {
+	attackerRoll := attacker.RollForRangedAttack()
+	defenderDef := defender.GetDefence()
+	dead := false
+	if attackerRoll >= defenderDef {
+		damage := attacker.RollForRangedDamage()
+		defender.TakeDamage(damage)
+		if defender.IsDead() {
+			dead = true
+		}
+		if interactive && pattacker {
+			s.Out.Message(RangedAttackMessage("You", defender.GetTheName(), attacker, defender))
+		} else if interactive && !pattacker {
+			s.Out.Message(RangedAttackMessage(attacker.GetTheName(), "you", attacker, defender))
+		}
+	} else if interactive {
+		if pattacker {
+			s.Out.Message(MissMessage("You", defender.GetTheName(), attacker, defender))
+		} else {
+			s.Out.Message(MissMessage(attacker.GetTheName(), "you", attacker, defender))
+		}
+	}
+	return dead
+}
+
+func RangedAttackMessage(aname, dname string, attacker, defender *Critter) string {
+	if aname == "You" {
+		return fmt.Sprintf("Your shot strikes %s", dname)
+	} else {
+		return fmt.Sprintf("%s's shot strikes %s", aname, dname)
+	}
+}

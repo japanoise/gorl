@@ -40,6 +40,8 @@ const (
 	ItemClassPotion
 	ItemClassFood
 	ItemClassMercGen
+	ItemClassRanged
+	ItemClassAmmo
 )
 
 type InvItem struct {
@@ -56,6 +58,8 @@ func initItems() error {
 	ItemClassDir[ItemClassPotion] = &ItemClass{SpriteItemPotion, "potion"}
 	ItemClassDir[ItemClassFood] = &ItemClass{SpriteItemFoodGeneric, "food"}
 	ItemClassDir[ItemClassMercGen] = &ItemClass{SpriteItemFoodGeneric, "mercantile generator"}
+	ItemClassDir[ItemClassRanged] = &ItemClass{SpriteItemWeaponGeneric, "ranged weapon"}
+	ItemClassDir[ItemClassAmmo] = &ItemClass{SpriteItemAmmo, "ammo"}
 	return nil
 }
 
@@ -76,6 +80,16 @@ func GetGoldCoins(value int) *Item {
 func (i *Item) DoDamage() int {
 	if i.Class == ItemClassWeapon {
 		return SmallDiceRoll(i.DamageAc)
+	} else {
+		return 1
+	}
+}
+
+func (i *Item) DoRangedDamage() int {
+	if i.Class == ItemClassRanged {
+		val := SmallDiceRoll(i.DamageAc)
+		debug.Println(val)
+		return val
 	} else {
 		return 1
 	}
@@ -163,7 +177,7 @@ func UseItem(state *State, player *Critter, item *Item) {
 		}
 		g.Message("You don " + item.DescribeExtra())
 		player.Armor = item
-	} else if item.Class == ItemClassWeapon {
+	} else if item.Class == ItemClassWeapon || item.Class == ItemClassRanged {
 		if player.Weapon != nil {
 			g.Message("You stow " + item.DescribeExtra())
 			store = player.Weapon
@@ -279,4 +293,25 @@ func Grab(state *State, player *Critter) {
 	}
 	state.Out.Message(msg)
 	state.CurLevel.Tiles[player.X][player.Y].Items = []*Item{}
+}
+
+func Shoot(state *State, player *Critter) (*Critter, bool) {
+	if player.Weapon == nil {
+		state.Out.Message("You're not carrying a weapon!")
+	} else if player.Weapon.Class != ItemClassRanged {
+		state.Out.Message(player.Weapon.Describe() + " is not a ranged weapon!")
+	} else {
+		dir := state.In.GetDirection("Fire at what (which direction)?")
+		p := getEndPoint(state.CurLevel, player, dir)
+		if p.X == player.X && p.Y == player.Y {
+			state.Out.Message("That's not a solution, " + player.GetName())
+		} else if state.CurLevel.OOB(p.X, p.Y) {
+			state.Out.Message("The arrow shoots off into the distance!")
+		} else if state.CurLevel.Tiles[p.X][p.Y].Here == nil {
+			state.Out.Message("The arrow strikes " + TilesDir[state.CurLevel.Tiles[p.X][p.Y].Id].Name)
+		} else {
+			return state.CurLevel.Tiles[p.X][p.Y].Here, RangedAttack(true, true, state, player, state.CurLevel.Tiles[p.X][p.Y].Here)
+		}
+	}
+	return nil, false
 }

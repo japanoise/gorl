@@ -117,6 +117,10 @@ func (c *Critter) RollForAttack() int {
 	return LargeDiceRoll(1, 20)
 }
 
+func (c *Critter) RollForRangedAttack() int {
+	return LargeDiceRoll(1, 20)
+}
+
 func (c *Critter) GetDefence() int {
 	if c.Armor == nil {
 		return int(c.GetRace().BaseAC)
@@ -130,6 +134,14 @@ func (c *Critter) RollForDamage() int {
 		return SmallDiceRoll(c.GetRace().BaseDamage)
 	} else {
 		return c.Weapon.DoDamage()
+	}
+}
+
+func (c *Critter) RollForRangedDamage() int {
+	if c.Weapon == nil {
+		return SmallDiceRoll(c.GetRace().BaseDamage)
+	} else {
+		return c.Weapon.DoRangedDamage()
 	}
 }
 

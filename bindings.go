@@ -26,6 +26,7 @@ const (
 	GetItems                = "Grab"
 	DropItems               = "Drop"
 	Chat                    = "Chat"
+	Fire                    = "Fire"
 )
 
 var bindings map[string]Control
