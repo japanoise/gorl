@@ -215,6 +215,14 @@ func doMainLoop(state *State, player *Critter, over *Overworld, stdun *StateDung
 		case PlayerSW:
 			target = Move(state.CurLevel, player, -1, 1)
 			pmoved = true
+		case Open:
+			tile := TileNSquaresInDirFromXY(state.CurLevel, 1, state.In.GetDirection("Open what (in which direction)?"), player.X, player.Y)
+			if tile.Id == TileDoor {
+				state.Out.Message("You open the door")
+				tile.Id = TileDoorOpen
+			} else {
+				state.Out.Message("There's no door to open there!")
+			}
 		case PlayerZapSpell:
 			c := ZapSpell(state, player, state.CurLevel)
 			for _, crit := range c {

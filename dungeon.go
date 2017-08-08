@@ -142,6 +142,10 @@ func dunGen(elevation int, r *rand.Rand) (*Map, []SpawnRegion) {
 			}
 		}
 	}
+	// If there aren't enough rooms, there might be hangs when placing things later.
+	if len(spawns) < 5 {
+		return dunGen(elevation, r)
+	}
 	// Draw Corridoors
 	for xrn := 0; xrn < numroomsx; xrn++ {
 		for yrn := 0; yrn < numroomsy; yrn++ {
@@ -151,9 +155,13 @@ func dunGen(elevation int, r *rand.Rand) (*Map, []SpawnRegion) {
 				y := anchory + yh
 				for x := anchorx + xh; x <= anchorx+xh+roomsx && x < sizex; x++ {
 					if !retval.Tiles[x][y].IsPassable() {
-						retval.Tiles[x][y] = FloorTile()
-						retval.Tiles[x][y+1] = WallTile()
-						retval.Tiles[x][y-1] = WallTile()
+						if retval.Tiles[x][y+1].Id == TileWall && x != anchorx+xh+1 && x < anchorx+xh+roomsx-1 {
+							retval.Tiles[x][y] = DoorTile()
+						} else {
+							retval.Tiles[x][y+1] = WallTile()
+							retval.Tiles[x][y-1] = WallTile()
+							retval.Tiles[x][y] = FloorTile()
+						}
 					}
 				}
 			}
@@ -161,9 +169,13 @@ func dunGen(elevation int, r *rand.Rand) (*Map, []SpawnRegion) {
 				x := anchorx + xh
 				for y := anchory + yh; y <= anchory+yh+roomsy && y < sizey; y++ {
 					if !retval.Tiles[x][y].IsPassable() {
-						retval.Tiles[x][y] = FloorTile()
-						retval.Tiles[x+1][y] = WallTile()
-						retval.Tiles[x-1][y] = WallTile()
+						if retval.Tiles[x+1][y].Id == TileWall && y != anchory+yh+1 && y < anchory+yh+roomsy-1 {
+							retval.Tiles[x][y] = DoorTile()
+						} else {
+							retval.Tiles[x+1][y] = WallTile()
+							retval.Tiles[x-1][y] = WallTile()
+							retval.Tiles[x][y] = FloorTile()
+						}
 					}
 				}
 			}
@@ -172,27 +184,39 @@ func dunGen(elevation int, r *rand.Rand) (*Map, []SpawnRegion) {
 	return retval, spawns
 }
 
-// Adds features to the dungeon - only staircases for now.
+// Adds features to the dungeon
 func dunAddFeatures(m *Map, spawnrooms []SpawnRegion, elevation, maxdepth int, r *rand.Rand) {
 	// Add stairs leading up
 	room := spawnrooms[r.Intn(len(spawnrooms))]
-	roomw := room.BotRightX - room.TopLeftX
-	roomh := room.BotRightY - room.TopLeftY
-	x := room.TopLeftX + r.Intn(roomw)
-	y := room.TopLeftY + r.Intn(roomh)
+	x, y := FindPlaceInRoom(m, room)
 	m.Tiles[x][y].Id = TileStairUp
 	m.UpStairsX = x
 	m.UpStairsY = y
 	// Add stairs leading down
 	if elevation != maxdepth {
 		room := spawnrooms[r.Intn(len(spawnrooms))]
-		roomw := room.BotRightX - room.TopLeftX
-		roomh := room.BotRightY - room.TopLeftY
-		x := room.TopLeftX + r.Intn(roomw)
-		y := room.TopLeftY + r.Intn(roomh)
+		x, y := FindPlaceInRoom(m, room)
 		m.Tiles[x][y].Id = TileStairDown
 		m.DownStairsX = x
 		m.DownStairsY = y
+	}
+
+	for _, room := range spawnrooms {
+		// Extra features
+		roll := r.Intn(40) - 19
+		if roll > 15 {
+			x, y := FindPlaceInRoom(m, room)
+			switch roll {
+			case 16:
+				m.Tiles[x][y].Id = TileColumn
+			case 17:
+				m.Tiles[x][y].Id = TileFountain
+			case 18:
+				m.Tiles[x][y].Id = TileAltar
+			default:
+				m.Tiles[x][y].Id = TileSprungTrap
+			}
+		}
 	}
 }
 
@@ -208,10 +232,7 @@ func Populate(dungeon *Map, spawnrooms []SpawnRegion, elevation int) []*Critter 
 	return ret
 }
 
-func PlaceCritterInRoom(mons *Critter, dungeon *Map, room SpawnRegion) {
-	if dungeon.Tiles[mons.X][mons.Y].Here == mons {
-		dungeon.Tiles[mons.X][mons.Y].Here = nil
-	}
+func FindPlaceInRoom(dungeon *Map, room SpawnRegion) (int, int) {
 	roomw := room.BotRightX - room.TopLeftX
 	roomh := room.BotRightY - room.TopLeftY
 	x := room.TopLeftX + rand.Intn(roomw)
@@ -220,21 +241,24 @@ func PlaceCritterInRoom(mons *Critter, dungeon *Map, room SpawnRegion) {
 		x = room.TopLeftX + rand.Intn(roomw)
 		y = room.TopLeftY + rand.Intn(roomh)
 	}
-	mons.X = x
-	mons.Y = y
+	return x, y
+}
+
+func PlaceCritterInRoom(mons *Critter, dungeon *Map, room SpawnRegion) {
+	if dungeon.Tiles[mons.X][mons.Y].Here == mons {
+		dungeon.Tiles[mons.X][mons.Y].Here = nil
+	}
+	mons.X, mons.Y = FindPlaceInRoom(dungeon, room)
 	dungeon.Tiles[mons.X][mons.Y].Here = mons
 }
 
 func PlaceItemInRoom(item *Item, dungeon *Map, room SpawnRegion) {
-	roomw := room.BotRightX - room.TopLeftX
-	roomh := room.BotRightY - room.TopLeftY
-	x := room.TopLeftX + rand.Intn(roomw)
-	y := room.TopLeftY + rand.Intn(roomh)
-	for pass, _ := dungeon.GetPassable(x, y); !(notStairs(dungeon, x, y) && pass); {
-		x = room.TopLeftX + rand.Intn(roomw)
-		y = room.TopLeftY + rand.Intn(roomh)
+	x, y := FindPlaceInRoom(dungeon, room)
+	if dungeon.Tiles[x][y].Items == nil {
+		dungeon.Tiles[x][y].Items = []*Item{item}
+	} else {
+		dungeon.Tiles[x][y].Items = append(dungeon.Tiles[x][y].Items, item)
 	}
-	dungeon.Tiles[x][y].Items = append(dungeon.Tiles[x][y].Items, item)
 }
 
 func notStairs(dungeon *Map, x, y int) bool {

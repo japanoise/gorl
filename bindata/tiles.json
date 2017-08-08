@@ -73,5 +73,35 @@
 		"Name": "the letter N",
 		"Passable": false,
 		"Transparent": false
+	},
+	"15": {
+		"Name": "a solid wooden door, closed",
+		"Passable": false,
+		"Transparent": false
+	},
+	"16": {
+		"Name": "a solid wooden door, open",
+		"Passable": true,
+		"Transparent": true
+	},
+	"17": {
+		"Name": "a stone pillar",
+		"Passable": false,
+		"Transparent": false
+	},
+	"18": {
+		"Name": "a fountain",
+		"Passable": false,
+		"Transparent": true
+	},
+	"19": {
+		"Name": "an altar",
+		"Passable": false,
+		"Transparent": true
+	},
+	"20": {
+		"Name": "a sprung trap",
+		"Passable": true,
+		"Transparent": true
 	}
 }

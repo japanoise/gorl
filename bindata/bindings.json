@@ -1,6 +1,6 @@
 {
     ".": "Do nothing",
-    "o": "Look",
+    "?": "Look",
     "\u003c": "Climb up",
     "\u003e": "Climb down",
     "C-c": "Quit",
@@ -38,5 +38,6 @@
     "g": "Grab",
     "c": "Chat",
     "d": "Drop",
-    "f": "Fire"
+    "f": "Fire",
+    "o": "Open"
 }

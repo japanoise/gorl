@@ -22,6 +22,12 @@ func getTileSprites() map[gorl.TileID]*CursesSprite {
 	ret[gorl.TileOverworldVillage] = &CursesSprite{'%', termbox.ColorDefault | termbox.AttrReverse, termbox.ColorDefault}
 	ret[gorl.TileLetterI] = &CursesSprite{'I', termbox.ColorDefault | termbox.AttrReverse, termbox.ColorDefault}
 	ret[gorl.TileLetterN] = &CursesSprite{'N', termbox.ColorDefault | termbox.AttrReverse, termbox.ColorDefault}
+	ret[gorl.TileDoor] = &CursesSprite{'+', termbox.ColorRed, termbox.ColorDefault}
+	ret[gorl.TileDoorOpen] = &CursesSprite{'\\', termbox.ColorRed, termbox.ColorDefault}
+	ret[gorl.TileColumn] = &CursesSprite{'0', termbox.ColorDefault | termbox.AttrReverse, termbox.ColorDefault}
+	ret[gorl.TileSprungTrap] = &CursesSprite{'^', termbox.ColorDefault, termbox.ColorDefault}
+	ret[gorl.TileAltar] = &CursesSprite{'_', termbox.ColorDefault, termbox.ColorDefault}
+	ret[gorl.TileFountain] = &CursesSprite{'}', termbox.ColorBlue, termbox.ColorDefault}
 	return ret
 }
 

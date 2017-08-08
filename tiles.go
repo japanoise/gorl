@@ -18,6 +18,12 @@ const (
 	TileOverworldVillage
 	TileLetterI
 	TileLetterN
+	TileDoor
+	TileDoorOpen
+	TileColumn
+	TileFountain
+	TileAltar
+	TileSprungTrap
 )
 
 type Tile struct {
@@ -121,6 +127,11 @@ func WallTile() MapTile {
 // Floor tile
 func FloorTile() MapTile {
 	return TileOfClass(TileFloor)
+}
+
+// Door tile
+func DoorTile() MapTile {
+	return TileOfClass(TileDoor)
 }
 
 func TileOfClass(id TileID) MapTile {
