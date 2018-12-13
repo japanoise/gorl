@@ -1,6 +1,10 @@
 package gorl
 
-import "math"
+import (
+	"math"
+
+	dmap "github.com/japanoise/dmap"
+)
 
 type AiData struct {
 	Active bool
@@ -26,7 +30,7 @@ func (p *Point) GetXY() (int, int) {
 	return p.X, p.Y
 }
 
-func AiOneTurn(state *State, player *Critter, pdjmap *DijkstraMap) (bool, string) {
+func AiOneTurn(state *State, player *Critter, pdjmap *dmap.DijkstraMap) (bool, string) {
 	turnlen, starved := state.UpdateTimer(player)
 	if starved {
 		return true, "starvation"

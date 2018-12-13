@@ -6,8 +6,8 @@ import (
 
 type Map struct {
 	Tiles       [][]MapTile
-	SizeX       int
-	SizeY       int
+	MSizeX      int
+	MSizeY      int
 	Elevation   int // gt 0 means dungeon, lt 0 means outdoors, 0 means inside a civilized area
 	UpStairsX   int
 	UpStairsY   int
@@ -28,9 +28,21 @@ func (m *MapTile) IsPassable() bool {
 	return TilesDir[m.Id].Passable
 }
 
+func (m *Map) SizeY() int {
+	return m.MSizeY
+}
+
+func (m *Map) SizeX() int {
+	return m.MSizeX
+}
+
+func (m *Map) IsPassable(x, y int) bool {
+	return m.Tiles[x][y].IsPassable()
+}
+
 func (m *Map) CollectItems(items []*DungeonItem) []*DungeonItem {
-	for x := 0; x < m.SizeX; x++ {
-		for y := 0; y < m.SizeY; y++ {
+	for x := 0; x < m.MSizeX; x++ {
+		for y := 0; y < m.MSizeY; y++ {
 			if m.Tiles[x][y].IsPassable() {
 				if m.Tiles[x][y].Items != nil {
 					for _, item := range m.Tiles[x][y].Items {
@@ -91,7 +103,7 @@ func (m *Map) UnLit(x, y int) {
 
 // Is a point out-of-bounds?
 func (m *Map) OOB(x, y int) bool {
-	if x < m.SizeX && x >= 0 && y < m.SizeY && y >= 0 {
+	if x < m.MSizeX && x >= 0 && y < m.MSizeY && y >= 0 {
 		return false
 	} else {
 		return true
@@ -119,8 +131,8 @@ func (m *Map) PlaceCritterAtUpStairs(c *Critter) {
 }
 
 func (m *Map) Darken() {
-	for x := 0; x < m.SizeX; x++ {
-		for y := 0; y < m.SizeY; y++ {
+	for x := 0; x < m.MSizeX; x++ {
+		for y := 0; y < m.MSizeY; y++ {
 			m.Tiles[x][y].Lit = false
 		}
 	}

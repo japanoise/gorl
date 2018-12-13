@@ -3,6 +3,7 @@ package gorl
 import (
 	"fmt"
 
+	dmap "github.com/japanoise/dmap"
 	"github.com/japanoise/engutil"
 )
 
@@ -36,7 +37,7 @@ type StatBlock struct {
 	Exp   int
 }
 
-func (c *Critter) Chase(m *Map, d *DijkstraMap) *Critter {
+func (c *Critter) Chase(m *Map, d *dmap.DijkstraMap) *Critter {
 	lv := d.LowestNeighbour(c.X, c.Y)
 	return MoveAbs(m, c, lv.X, lv.Y)
 }

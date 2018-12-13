@@ -70,7 +70,7 @@ func TileNSquaresInDirFromXY(m *Map, squares int, dir Direction, x, y int) *MapT
 			return &m.Tiles[x][y-squares]
 		}
 	case DirSouth:
-		if y+squares >= m.SizeY {
+		if y+squares >= m.MSizeY {
 			return nil
 		} else {
 			return &m.Tiles[x][y+squares]
@@ -82,19 +82,19 @@ func TileNSquaresInDirFromXY(m *Map, squares int, dir Direction, x, y int) *MapT
 			return &m.Tiles[x-squares][y]
 		}
 	case DirEast:
-		if x+squares >= m.SizeX {
+		if x+squares >= m.MSizeX {
 			return nil
 		} else {
 			return &m.Tiles[x+squares][y]
 		}
 	case DirNE:
-		if x+squares >= m.SizeX || y-squares < 0 {
+		if x+squares >= m.MSizeX || y-squares < 0 {
 			return nil
 		} else {
 			return &m.Tiles[x+squares][y-squares]
 		}
 	case DirSE:
-		if x+squares >= m.SizeX || y+squares >= m.SizeY {
+		if x+squares >= m.MSizeX || y+squares >= m.MSizeY {
 			return nil
 		} else {
 			return &m.Tiles[x+squares][y+squares]
@@ -106,7 +106,7 @@ func TileNSquaresInDirFromXY(m *Map, squares int, dir Direction, x, y int) *MapT
 			return &m.Tiles[x-squares][y-squares]
 		}
 	case DirSW:
-		if x-squares < 0 || y+squares >= m.SizeY {
+		if x-squares < 0 || y+squares >= m.MSizeY {
 			return nil
 		} else {
 			return &m.Tiles[x-squares][y+squares]
