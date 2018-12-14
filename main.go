@@ -147,7 +147,7 @@ func doMainLoop(state *State, player *Critter, over *Overworld, stdun *StateDung
 	mydun := stdun
 	playing := true
 	pmoved := true
-	pdjmap := dmap.BlankDMap(state.CurLevel)
+	pdjmap := dmap.BlankDMap(state.CurLevel, dmap.DiagonalNeighbours)
 	pdjmap.Calc(player)
 	lastll := -1337
 	for playing {
@@ -299,7 +299,7 @@ func doMainLoop(state *State, player *Critter, over *Overworld, stdun *StateDung
 
 		// If the player's moved, recalculate the Dijkstra map and tell her what's here/loot gold
 		if pmoved {
-			pdjmap = dmap.BlankDMap(state.CurLevel)
+			pdjmap = dmap.BlankDMap(state.CurLevel, dmap.DiagonalNeighbours)
 			pdjmap.Calc(player)
 			pmoved = false
 			if state.CurLevel.Tiles[player.X][player.Y].Items != nil {
